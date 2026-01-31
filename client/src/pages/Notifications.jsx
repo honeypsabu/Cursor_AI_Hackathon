@@ -11,20 +11,26 @@ export default function Notifications() {
   const [runMatchStatus, setRunMatchStatus] = useState(null)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        navigate('/login', { replace: true })
-        return
-      }
-      setCurrentUserId(user.id)
-      const { data } = await supabase.rpc('get_my_invites')
-      setInvites(data || [])
-      setLoading(false)
+  async function loadInvites() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      navigate('/login', { replace: true })
+      return
     }
-    load()
+    setCurrentUserId(user.id)
+    const { data } = await supabase.rpc('get_my_invites')
+    setInvites(Array.isArray(data) ? data : [])
+  }
+
+  useEffect(() => {
+    loadInvites().finally(() => setLoading(false))
   }, [navigate])
+
+  useEffect(() => {
+    const onRefresh = () => loadInvites()
+    window.addEventListener('refresh-invite-count', onRefresh)
+    return () => window.removeEventListener('refresh-invite-count', onRefresh)
+  }, [])
 
   function refreshInviteCount() {
     window.dispatchEvent(new CustomEvent('refresh-invite-count'))

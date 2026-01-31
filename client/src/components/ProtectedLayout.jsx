@@ -9,7 +9,8 @@ export default function ProtectedLayout() {
   useEffect(() => {
     async function fetchCount() {
       const { data } = await supabase.rpc('get_invite_count')
-      setInviteCount(data ?? 0)
+      const count = Array.isArray(data) ? (data[0] ?? 0) : (data ?? 0)
+      setInviteCount(typeof count === 'number' ? count : 0)
     }
     fetchCount()
     const interval = setInterval(fetchCount, 30000)

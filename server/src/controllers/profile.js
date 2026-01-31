@@ -26,10 +26,16 @@ export async function getProfile(req, res) {
 
 export async function updateProfile(req, res) {
   try {
-    const { full_name, avatar_url } = req.body
+    const { full_name, avatar_url, status, age, gender, languages, interests } = req.body
     const updates = {}
     if (typeof full_name === 'string') updates.full_name = full_name
     if (typeof avatar_url === 'string') updates.avatar_url = avatar_url
+    if (typeof status === 'string') updates.status = status.slice(0, 100)
+    const ageNum = typeof age === 'number' ? age : parseInt(age, 10)
+    if (!isNaN(ageNum) && ageNum >= 1 && ageNum <= 120) updates.age = ageNum
+    if (typeof gender === 'string') updates.gender = gender
+    if (Array.isArray(languages)) updates.languages = languages
+    if (Array.isArray(interests)) updates.interests = interests
     updates.updated_at = new Date().toISOString()
     if (Object.keys(updates).length <= 1) {
       return res.status(400).json({ error: 'No valid fields to update' })

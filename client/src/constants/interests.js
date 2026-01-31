@@ -1,0 +1,16 @@
+export const INTEREST_OPTIONS = [
+  { id: 'crafts', label: 'Crafts' },
+  { id: 'art', label: 'Art' },
+  { id: 'sports', label: 'Sports' },
+  { id: 'music', label: 'Music' },
+  { id: 'outdoor', label: 'Outdoor' },
+  { id: 'painting', label: 'Painting' },
+  { id: 'clubbing', label: 'Clubbing' },
+  { id: 'gaming', label: 'Gaming' },
+  { id: 'reading', label: 'Reading' },
+  { id: 'cooking', label: 'Cooking' },
+  { id: 'travel', label: 'Travel' },
+  { id: 'photography', label: 'Photography' },
+  { id: 'movies', label: 'Movies' },
+  { id: 'tech', label: 'Tech' },
+]

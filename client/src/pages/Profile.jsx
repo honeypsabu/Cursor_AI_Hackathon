@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { INTEREST_OPTIONS } from '../constants/interests'
 
 export default function Profile() {
   const [profile, setProfile] = useState(null)
   const [fullName, setFullName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
+  const [selectedInterests, setSelectedInterests] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -28,9 +30,10 @@ export default function Profile() {
         setLoading(false)
         return
       }
-      setProfile(data || { id: user.id, email: user.email, full_name: '', avatar_url: '' })
+      setProfile(data || { id: user.id, email: user.email, full_name: '', avatar_url: '', interests: [] })
       setFullName(data?.full_name ?? user.user_metadata?.full_name ?? '')
       setAvatarUrl(data?.avatar_url ?? user.user_metadata?.avatar_url ?? '')
+      setSelectedInterests(Array.isArray(data?.interests) ? data.interests : [])
       setLoading(false)
     }
     load()
@@ -50,6 +53,7 @@ export default function Profile() {
           email: user.email,
           full_name: fullName || null,
           avatar_url: avatarUrl || null,
+          interests: selectedInterests.length ? selectedInterests : [],
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'id' }
@@ -59,7 +63,7 @@ export default function Profile() {
       setError(err.message)
       return
     }
-    setProfile((p) => ({ ...p, full_name: fullName, avatar_url: avatarUrl }))
+    setProfile((p) => ({ ...p, full_name: fullName, avatar_url: avatarUrl, interests: selectedInterests }))
   }
 
   async function handleSignOut() {
@@ -126,6 +130,34 @@ export default function Profile() {
               className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               placeholder="https://..."
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Choose your interests
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {INTEREST_OPTIONS.map((opt) => {
+                const selected = selectedInterests.includes(opt.id)
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedInterests((prev) =>
+                        prev.includes(opt.id) ? prev.filter((id) => id !== opt.id) : [...prev, opt.id]
+                      )
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
+                      selected
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-slate-700 text-slate-300 border border-slate-600 hover:border-slate-500'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
           <button
             type="submit"

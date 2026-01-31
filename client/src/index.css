@@ -14,3 +14,8 @@
     @apply bg-background text-text;
   }
 }
+
+.emoji-marker {
+  background: none !important;
+  border: none !important;
+}

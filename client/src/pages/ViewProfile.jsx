@@ -304,7 +304,13 @@ export default function ViewProfile() {
           )}
         </div>
         )}
-        <div className="flex justify-center">
+        <div className="flex flex-wrap justify-center gap-3">
+          <Link
+            to="/profile/map"
+            className="px-6 py-3 rounded-lg border border-slate-600 hover:bg-slate-700 font-medium transition"
+          >
+            View my area on map
+          </Link>
           <Link
             to="/profile/edit"
             className="px-6 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 font-medium transition"

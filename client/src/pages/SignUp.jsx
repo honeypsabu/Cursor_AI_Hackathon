@@ -43,7 +43,7 @@ export default function SignUp() {
           <p className="mb-4 text-red-500 text-sm">{error}</p>
         )}
         {message && (
-          <p className="mb-4 text-secondary text-sm">{message}</p>
+          <p className="mb-4 text-primary text-sm">{message}</p>
         )}
         <button
           type="button"

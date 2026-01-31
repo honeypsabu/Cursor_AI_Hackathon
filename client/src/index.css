@@ -5,9 +5,9 @@
 @layer base {
   :root {
     --color-primary: #8B5CF6;
-    --color-secondary: #06B6D4;
-    --color-accent: #FACC15;
-    --color-background: #F8FAFC;
+    --color-primary-hover: #7C3AED;
+    --color-secondary: #A78BFA;
+    --color-background: #FFFFFF;
     --color-text: #1E293B;
   }
   body {
@@ -36,7 +36,7 @@
 }
 .map-marker-you {
   font-size: 1.75rem;
-  filter: drop-shadow(0 3px 8px rgba(251, 146, 60, 0.5));
+  filter: drop-shadow(0 3px 8px rgba(139, 92, 246, 0.5));
 }
 
 /* Leaflet popup styling */

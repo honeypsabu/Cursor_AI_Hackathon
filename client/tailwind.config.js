@@ -8,23 +8,18 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#8B5CF6',    // Electric Violet - Buttons, Level-up icons, Branding
+          DEFAULT: '#8B5CF6',
           hover: '#7C3AED',
           light: '#A78BFA',
         },
         secondary: {
-          DEFAULT: '#06B6D4',    // Tropical Teal - Online status, Achievement badges
-          hover: '#0891B2',
-          light: '#22D3EE',
+          DEFAULT: '#A78BFA',
+          hover: '#8B5CF6',
+          light: '#C4B5FD',
         },
-        accent: {
-          DEFAULT: '#FACC15',    // Cyber Yellow - Streak counters, Rare alerts
-          hover: '#EAB308',
-          light: '#FDE047',
-        },
-        background: '#F8FAFC',   // Soft Pearl - Main app background
+        background: '#FFFFFF',
         text: {
-          DEFAULT: '#1E293B',    // Deep Navy - High readability
+          DEFAULT: '#1E293B',
           muted: '#64748B',
           light: '#94A3B8',
         },

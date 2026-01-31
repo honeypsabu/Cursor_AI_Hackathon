@@ -98,9 +98,9 @@ export default function Profile() {
               <img
                 src={profile.avatar_url}
                 alt="Avatar"
-                className="w-24 h-24 rounded-full object-cover ring-2 ring-secondary"
+                className="w-24 h-24 rounded-full object-cover ring-2 ring-primary"
               />
-              <span className="absolute bottom-0 right-0 w-3 h-3 bg-secondary rounded-full border-2 border-white" title="Online" />
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-white" title="Online" />
             </div>
           </div>
         )}
@@ -135,7 +135,7 @@ export default function Profile() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-text mb-2">
               Choose your interests
             </label>
             <div className="flex flex-wrap gap-2">
@@ -152,8 +152,8 @@ export default function Profile() {
                     }}
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
                       selected
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-slate-700 text-slate-300 border border-slate-600 hover:border-slate-500'
+                        ? 'bg-primary text-white'
+                        : 'bg-slate-100 text-text border border-slate-200 hover:border-primary/50'
                     }`}
                   >
                     {opt.label}

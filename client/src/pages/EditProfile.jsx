@@ -206,35 +206,35 @@ export default function EditProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
-        <p className="text-slate-400">Loading profile...</p>
+      <div className="min-h-screen bg-white text-text flex items-center justify-center">
+        <p className="text-text-muted">Loading profile...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md rounded-xl bg-slate-800 p-8 shadow-xl">
+    <div className="min-h-screen bg-white text-text flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-xl border border-slate-200">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold">Edit profile</h2>
+          <h2 className="text-2xl font-bold text-text">Edit profile</h2>
           <Link
             to="/profile"
-            className="text-sm text-slate-400 hover:text-white"
+            className="text-sm text-text-muted hover:text-text"
           >
             Back to profile
           </Link>
         </div>
-        {profile?.avatar_url && (
+        {avatarUrl && (
           <div className="mb-6 flex justify-center">
             <img
-              src={profile.avatar_url}
+              src={avatarUrl}
               alt="Avatar"
               className="w-24 h-24 rounded-full object-cover"
             />
           </div>
         )}
         {error && (
-          <p className="mb-4 text-red-400 text-sm">{error}</p>
+          <p className="mb-4 text-red-500 text-sm">{error}</p>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -242,7 +242,7 @@ export default function EditProfile() {
               Profile picture
             </label>
             <div className="flex flex-wrap gap-3 items-center">
-              <label className="cursor-pointer px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 hover:border-slate-500 text-sm font-medium">
+              <label className="cursor-pointer px-4 py-2 rounded-lg bg-slate-100 border border-slate-200 hover:border-primary text-text text-sm font-medium">
                 {uploading ? 'Uploading...' : 'Upload photo'}
                 <input
                   type="file"
@@ -252,11 +252,11 @@ export default function EditProfile() {
                   disabled={uploading}
                 />
               </label>
-              <span className="text-slate-400 text-sm">or paste URL below</span>
+              <span className="text-text-muted text-sm">or paste URL below</span>
             </div>
           </div>
           <div>
-            <label htmlFor="avatar_url" className="block text-sm font-medium text-slate-300 mb-1">
+            <label htmlFor="avatar_url" className="block text-sm font-medium text-text mb-1">
               Avatar URL
             </label>
             <input
@@ -264,12 +264,12 @@ export default function EditProfile() {
               type="url"
               value={avatarUrl}
               onChange={(e) => setAvatarUrl(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 text-text placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="https://..."
             />
           </div>
           <div>
-            <label htmlFor="full_name" className="block text-sm font-medium text-slate-300 mb-1">
+            <label htmlFor="full_name" className="block text-sm font-medium text-text mb-1">
               Full name
             </label>
             <input
@@ -277,12 +277,12 @@ export default function EditProfile() {
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 text-text placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Your name"
             />
           </div>
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-slate-300 mb-1">
+            <label htmlFor="status" className="block text-sm font-medium text-text mb-1">
               What do you wanna do?
             </label>
             <input
@@ -291,13 +291,13 @@ export default function EditProfile() {
               value={status}
               onChange={(e) => setStatus(e.target.value.slice(0, 100))}
               maxLength={100}
-              className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 text-text placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="I wanna go for a walk"
             />
-            <p className="text-slate-400 text-xs mt-1">{status.length}/100</p>
+            <p className="text-text-muted text-xs mt-1">{status.length}/100</p>
           </div>
           <div>
-            <label htmlFor="age" className="block text-sm font-medium text-slate-300 mb-1">
+            <label htmlFor="age" className="block text-sm font-medium text-text mb-1">
               Age
             </label>
             <input
@@ -307,19 +307,19 @@ export default function EditProfile() {
               max={120}
               value={age}
               onChange={(e) => setAge(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 text-text placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Your age"
             />
           </div>
           <div>
-            <label htmlFor="gender" className="block text-sm font-medium text-slate-300 mb-1">
+            <label htmlFor="gender" className="block text-sm font-medium text-text mb-1">
               Gender
             </label>
             <select
               id="gender"
               value={gender}
               onChange={(e) => setGender(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 text-text focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {GENDER_OPTIONS.map((opt) => (
                 <option key={opt.id || 'none'} value={opt.id}>
@@ -330,14 +330,14 @@ export default function EditProfile() {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1">
-              Area <span className="text-slate-500">(private — used for map)</span>
+              Area <span className="text-text-muted">(private — used for map)</span>
             </label>
             <input
               id="address_postal"
               type="text"
               value={addressPostal}
               onChange={(e) => setAddressPostal(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-2"
+              className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 text-text placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary mb-2"
               placeholder="Postal code"
             />
             <input
@@ -345,7 +345,7 @@ export default function EditProfile() {
               type="text"
               value={addressCity}
               onChange={(e) => setAddressCity(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-2"
+              className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 text-text placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary mb-2"
               placeholder="City"
             />
             <input
@@ -353,12 +353,12 @@ export default function EditProfile() {
               type="text"
               value={addressCountry}
               onChange={(e) => setAddressCountry(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 text-text placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Country"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-text mb-2">
               Languages I speak
             </label>
             <div className="flex flex-wrap gap-2">
@@ -375,8 +375,8 @@ export default function EditProfile() {
                     }}
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
                       selected
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-slate-700 text-slate-300 border border-slate-600 hover:border-slate-500'
+                        ? 'bg-primary text-white'
+                        : 'bg-slate-100 text-text border border-slate-200 hover:border-primary/50'
                     }`}
                   >
                     {opt.label}
@@ -386,7 +386,7 @@ export default function EditProfile() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-text mb-2">
               Choose your interests
             </label>
             <div className="flex flex-wrap gap-2">
@@ -403,8 +403,8 @@ export default function EditProfile() {
                     }}
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
                       selected
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-slate-700 text-slate-300 border border-slate-600 hover:border-slate-500'
+                        ? 'bg-primary text-white'
+                        : 'bg-slate-100 text-text border border-slate-200 hover:border-primary/50'
                     }`}
                   >
                     {opt.label}
@@ -416,13 +416,13 @@ export default function EditProfile() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 font-medium disabled:opacity-50"
+            className="w-full py-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save profile'}
           </button>
         </form>
         {profile?.email && (
-          <p className="mt-4 text-slate-400 text-sm">Email: {profile.email}</p>
+          <p className="mt-4 text-text-muted text-sm">Email: {profile.email}</p>
         )}
       </div>
     </div>

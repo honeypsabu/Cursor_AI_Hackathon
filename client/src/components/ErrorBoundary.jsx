@@ -18,13 +18,14 @@ export default class ErrorBoundary extends Component {
           justifyContent: 'center',
           padding: 24,
           fontFamily: 'system-ui, sans-serif',
-          background: '#0f172a',
-          color: '#e2e8f0',
+          background: '#FFFFFF',
+          color: '#1E293B',
         }}>
-          <h1 style={{ fontSize: 18, marginBottom: 8 }}>Something went wrong</h1>
+          <h1 style={{ fontSize: 18, marginBottom: 8, color: '#8B5CF6' }}>Something went wrong</h1>
           <pre style={{
             padding: 16,
-            background: '#1e293b',
+            background: '#F8FAFC',
+            border: '1px solid #E2E8F0',
             borderRadius: 8,
             overflow: 'auto',
             fontSize: 12,

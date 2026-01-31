@@ -101,8 +101,8 @@ export default function ViewProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
-        <p className="text-slate-400">Loading profile...</p>
+      <div className="min-h-screen bg-white text-text flex items-center justify-center">
+        <p className="text-text-muted">Loading profile...</p>
       </div>
     )
   }
@@ -119,28 +119,28 @@ export default function ViewProfile() {
   const hasDetails = profile?.age != null || genderLabel || languageLabels.length > 0
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md rounded-xl bg-slate-800 p-8 shadow-xl">
+    <div className="min-h-screen bg-white text-text flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-xl border border-slate-200">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold">Your profile</h2>
+          <h2 className="text-2xl font-bold text-text">Your profile</h2>
           <div className="flex items-center gap-3">
             <Link
               to="/profile/edit"
-              className="text-sm text-emerald-400 hover:text-emerald-300 font-medium"
+              className="text-sm text-primary hover:text-primary-hover font-medium"
             >
               Edit profile
             </Link>
             <button
               type="button"
               onClick={handleSignOut}
-              className="text-sm text-slate-400 hover:text-white"
+              className="text-sm text-text-muted hover:text-text"
             >
               Sign out
             </button>
           </div>
         </div>
         {error && (
-          <p className="mb-4 text-red-400 text-sm">{error}</p>
+          <p className="mb-4 text-red-500 text-sm">{error}</p>
         )}
         <div className="flex flex-col items-center text-center mb-8">
           {profile?.avatar_url ? (
@@ -150,19 +150,19 @@ export default function ViewProfile() {
               className="w-28 h-28 rounded-full object-cover mb-4"
             />
           ) : (
-            <div className="w-28 h-28 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-2xl font-medium mb-4">
+            <div className="w-28 h-28 rounded-full bg-slate-100 flex items-center justify-center text-text-muted text-2xl font-medium mb-4">
               {profile?.full_name?.charAt(0)?.toUpperCase() || profile?.email?.charAt(0)?.toUpperCase() || '?'}
             </div>
           )}
-          <h3 className="text-xl font-semibold text-white">
+          <h3 className="text-xl font-semibold text-text">
             {profile?.full_name || 'No name set'}
           </h3>
           {profile?.email && (
-            <p className="text-slate-400 text-sm mt-1">{profile.email}</p>
+            <p className="text-text-muted text-sm mt-1">{profile.email}</p>
           )}
         </div>
         {hasDetails && (
-          <div className="mb-6 flex flex-wrap gap-4 justify-center text-sm text-slate-300">
+          <div className="mb-6 flex flex-wrap gap-4 justify-center text-sm text-text-muted">
             {profile?.age != null && <span>Age: {profile.age}</span>}
             {genderLabel && <span>Gender: {genderLabel}</span>}
             {languageLabels.length > 0 && (
@@ -172,7 +172,7 @@ export default function ViewProfile() {
         )}
         {!editingInterests && (
         <div className="mb-6">
-          <p className="text-sm font-medium text-slate-300 mb-1">What do you wanna do?</p>
+          <p className="text-sm font-medium text-text-muted mb-1">What do you wanna do?</p>
           {editingStatus ? (
             <div className="space-y-2">
               <input
@@ -181,16 +181,16 @@ export default function ViewProfile() {
                 onChange={(e) => setLocalStatus(e.target.value.slice(0, 100))}
                 maxLength={100}
                 placeholder="I wanna go for a walk"
-                className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 text-text placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary"
                 autoFocus
               />
-              <p className="text-slate-400 text-xs">{localStatus.length}/100</p>
+              <p className="text-text-muted text-xs">{localStatus.length}/100</p>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={saveStatus}
                   disabled={savingStatus}
-                  className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-sm font-medium disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white text-sm font-medium disabled:opacity-50"
                 >
                   {savingStatus ? 'Saving...' : 'Save'}
                 </button>
@@ -198,7 +198,7 @@ export default function ViewProfile() {
                   type="button"
                   onClick={cancelStatus}
                   disabled={savingStatus}
-                  className="px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-sm font-medium hover:border-slate-500"
+                  className="px-4 py-2 rounded-lg bg-slate-100 border border-slate-200 text-text text-sm font-medium hover:bg-slate-200"
                 >
                   Cancel
                 </button>
@@ -206,13 +206,13 @@ export default function ViewProfile() {
             </div>
           ) : profile?.status ? (
             <div className="flex items-center justify-between gap-2">
-              <p className="text-white text-sm bg-slate-700/50 rounded-lg px-4 py-3 border border-slate-600 flex-1">
+              <p className="text-text text-sm bg-slate-50 rounded-lg px-4 py-3 border border-slate-200 flex-1">
                 {profile.status}
               </p>
               <button
                 type="button"
                 onClick={openStatusEdit}
-                className="text-sm text-emerald-400 hover:text-emerald-300 font-medium shrink-0"
+                className="text-sm text-primary hover:text-primary-hover font-medium shrink-0"
               >
                 Edit
               </button>
@@ -221,7 +221,7 @@ export default function ViewProfile() {
             <button
               type="button"
               onClick={openStatusEdit}
-              className="text-slate-400 text-sm hover:text-emerald-400"
+              className="text-text-muted text-sm hover:text-primary"
             >
               Add something
             </button>
@@ -230,7 +230,7 @@ export default function ViewProfile() {
         )}
         {!editingStatus && (
         <div className="mb-6">
-          <p className="text-sm font-medium text-slate-300 mb-2">Interests</p>
+          <p className="text-sm font-medium text-text-muted mb-2">Interests</p>
           {editingInterests ? (
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2">
@@ -247,8 +247,8 @@ export default function ViewProfile() {
                       }}
                       className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
                         selected
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-slate-700 text-slate-300 border border-slate-600 hover:border-slate-500'
+                          ? 'bg-primary text-white'
+                          : 'bg-slate-100 text-text border border-slate-200 hover:border-primary/50'
                       }`}
                     >
                       {opt.label}
@@ -261,7 +261,7 @@ export default function ViewProfile() {
                   type="button"
                   onClick={saveInterests}
                   disabled={savingInterests}
-                  className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-sm font-medium disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white text-sm font-medium disabled:opacity-50"
                 >
                   {savingInterests ? 'Saving...' : 'Save'}
                 </button>
@@ -269,7 +269,7 @@ export default function ViewProfile() {
                   type="button"
                   onClick={cancelInterests}
                   disabled={savingInterests}
-                  className="px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-sm font-medium hover:border-slate-500"
+                  className="px-4 py-2 rounded-lg bg-slate-100 border border-slate-200 text-text text-sm font-medium hover:bg-slate-200"
                 >
                   Cancel
                 </button>
@@ -280,7 +280,7 @@ export default function ViewProfile() {
               {interestLabels.map((label) => (
                 <span
                   key={label}
-                  className="px-3 py-1.5 rounded-full text-sm bg-slate-700 text-slate-300 border border-slate-600"
+                  className="px-3 py-1.5 rounded-full text-sm bg-slate-100 text-text border border-slate-200"
                 >
                   {label}
                 </span>
@@ -288,7 +288,7 @@ export default function ViewProfile() {
               <button
                 type="button"
                 onClick={openInterestsEdit}
-                className="text-sm text-emerald-400 hover:text-emerald-300 font-medium"
+                className="text-sm text-primary hover:text-primary-hover font-medium"
               >
                 Edit
               </button>
@@ -297,7 +297,7 @@ export default function ViewProfile() {
             <button
               type="button"
               onClick={openInterestsEdit}
-              className="text-slate-400 text-sm hover:text-emerald-400"
+              className="text-text-muted text-sm hover:text-primary"
             >
               Add some
             </button>
@@ -307,13 +307,13 @@ export default function ViewProfile() {
         <div className="flex flex-wrap justify-center gap-3">
           <Link
             to="/profile/map"
-            className="px-6 py-3 rounded-lg border border-slate-600 hover:bg-slate-700 font-medium transition"
+            className="px-6 py-3 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium transition"
           >
             View my area on map
           </Link>
           <Link
             to="/profile/edit"
-            className="px-6 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 font-medium transition"
+            className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium transition"
           >
             Edit profile
           </Link>

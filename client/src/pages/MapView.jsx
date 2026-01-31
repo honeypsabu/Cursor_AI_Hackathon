@@ -118,9 +118,9 @@ export default function MapView() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-amber-950 text-white flex flex-col items-center justify-center z-50">
-        <div className="w-12 h-12 rounded-full border-2 border-amber-500/30 border-t-amber-400 animate-spin mb-4" />
-        <p className="text-amber-200 font-medium">Loading map...</p>
+      <div className="fixed inset-0 bg-white text-text flex flex-col items-center justify-center z-50">
+        <div className="w-12 h-12 rounded-full border-2 border-primary/30 border-t-primary animate-spin mb-4" />
+        <p className="text-text font-medium">Loading map...</p>
       </div>
     )
   }
@@ -131,14 +131,14 @@ export default function MapView() {
 
   if (!hasCoords) {
     return (
-      <div className="fixed inset-0 bg-amber-950 text-white flex flex-col items-center justify-center z-50 px-4">
-        <div className="w-16 h-16 rounded-2xl bg-amber-800/60 flex items-center justify-center text-3xl mb-6">📍</div>
-        <p className="text-amber-100 text-center mb-6 max-w-sm text-lg">
+      <div className="fixed inset-0 bg-white text-text flex flex-col items-center justify-center z-50 px-4">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-3xl mb-6">📍</div>
+        <p className="text-text text-center mb-6 max-w-sm text-lg">
           Add your postal code, city and country in Edit Profile to see your area on the map.
         </p>
         <Link
           to="/profile"
-          className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-semibold transition-colors shadow-lg shadow-amber-500/40"
+          className="px-6 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold transition-colors shadow-lg shadow-primary/30"
         >
           Back to profile
         </Link>
@@ -194,8 +194,8 @@ export default function MapView() {
           center={center}
           radius={800}
           pathOptions={{
-            color: '#f97316',
-            fillColor: '#fb923c',
+            color: '#8B5CF6',
+            fillColor: '#A78BFA',
             fillOpacity: 0.22,
             weight: 2,
             dashArray: '8, 8',
@@ -233,7 +233,7 @@ export default function MapView() {
                 )}
                 <button
                   type="button"
-                  className="mt-2 text-sm font-medium text-amber-600 hover:text-amber-500"
+                  className="mt-2 text-sm font-medium text-primary hover:text-primary-hover"
                   onClick={(e) => {
                     e.stopPropagation()
                     setSelectedUser(user)
@@ -252,7 +252,7 @@ export default function MapView() {
                   )}
                   <button
                     type="button"
-                    className="mt-2 w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-amber-950 text-sm font-semibold transition-colors shadow-md"
+                    className="mt-2 w-full py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-sm font-semibold transition-colors shadow-md"
                     onClick={() => setSelectedUser(user)}
                   >
                     View Profile
@@ -265,7 +265,7 @@ export default function MapView() {
       </MapContainer>
       <Link
         to="/profile"
-        className="absolute top-4 left-4 z-[1000] flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50/95 dark:bg-stone-800/95 backdrop-blur-md text-amber-950 dark:text-amber-50 hover:bg-amber-100 dark:hover:bg-stone-700/95 font-medium shadow-xl border border-amber-200/60 dark:border-amber-800/50 transition-all"
+        className="absolute top-4 left-4 z-[1000] flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/95 backdrop-blur-md text-text hover:bg-slate-50 font-medium shadow-xl border border-slate-200 transition-all"
       >
         <span className="text-lg">←</span>
         Back to profile
@@ -273,22 +273,22 @@ export default function MapView() {
 
       {selectedUser && (
         <div
-          className="absolute inset-0 z-[1100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          className="absolute inset-0 z-[1100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           role="dialog"
           aria-modal="true"
           aria-label="Profile"
           onClick={() => setSelectedUser(null)}
         >
           <div
-            className="bg-stone-900 rounded-2xl shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto text-amber-50 p-6 border border-amber-800/30"
+            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto text-text p-6 border border-slate-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-bold">Profile</h3>
+              <h3 className="text-xl font-bold text-text">Profile</h3>
               <button
                 type="button"
                 onClick={() => setSelectedUser(null)}
-                className="text-amber-200 hover:text-amber-50 text-2xl leading-none"
+                className="text-text-muted hover:text-text text-2xl leading-none"
                 aria-label="Close"
               >
                 &times;
@@ -302,7 +302,7 @@ export default function MapView() {
                   className="w-24 h-24 rounded-full object-cover mb-3"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-amber-800/60 flex items-center justify-center text-3xl font-medium text-amber-300 mb-3">
+                <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-medium text-primary mb-3">
                   {(selectedUser.full_name?.trim() || '?').charAt(0).toUpperCase()}
                 </div>
               )}
@@ -312,47 +312,47 @@ export default function MapView() {
             </div>
             {selectedUser.status?.trim() && (
               <div className="mb-4">
-                <p className="text-amber-300/90 text-sm font-medium mb-1">What do they want to do?</p>
-                <p className="text-amber-50">{selectedUser.status.trim()}</p>
+                <p className="text-text-muted text-sm font-medium mb-1">What do they want to do?</p>
+                <p className="text-text">{selectedUser.status.trim()}</p>
               </div>
             )}
             <div className="space-y-3 text-sm text-left">
               <p>
-                <span className="text-amber-300/90">Age:</span>{' '}
+                <span className="text-text-muted">Age:</span>{' '}
                 {(selectedUser.age != null && selectedUser.age !== '') ? String(selectedUser.age) : '—'}
               </p>
               <p>
-                <span className="text-amber-300/90">Gender:</span>{' '}
+                <span className="text-text-muted">Gender:</span>{' '}
                 {selectedUser.gender ? genderLabel(selectedUser.gender) : '—'}
               </p>
               <p>
-                <span className="text-amber-300/90">Languages:</span>{' '}
+                <span className="text-text-muted">Languages:</span>{' '}
                 {Array.isArray(selectedUser.languages) && selectedUser.languages.length > 0
                   ? selectedUser.languages.map(languageLabel).join(', ')
                   : '—'}
               </p>
               <div>
-                <p className="text-amber-300/90 mb-1">Interests</p>
+                <p className="text-text-muted mb-1">Interests</p>
                 {Array.isArray(selectedUser.interests) && selectedUser.interests.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {selectedUser.interests.map((id) => (
                       <span
                         key={id}
-                        className="px-2 py-1 rounded-full bg-amber-700/60 text-amber-100 text-xs"
+                        className="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs"
                       >
                         {interestLabel(id)}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-amber-400/70">—</p>
+                  <p className="text-text-muted">—</p>
                 )}
               </div>
             </div>
             <button
               type="button"
               onClick={() => setSelectedUser(null)}
-              className="mt-6 w-full py-3 rounded-xl bg-amber-600/80 hover:bg-amber-500 font-medium transition-colors text-amber-950"
+              className="mt-6 w-full py-3 rounded-xl bg-primary hover:bg-primary-hover text-white font-medium transition-colors"
             >
               Close
             </button>

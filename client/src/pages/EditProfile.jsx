@@ -190,7 +190,7 @@ export default function EditProfile() {
           </div>
           <div>
             <label htmlFor="status" className="block text-sm font-medium text-slate-300 mb-1">
-              How are you doing?
+              What do you wanna do?
             </label>
             <input
               id="status"

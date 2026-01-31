@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Circle, Marker, Popup, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
+import { INTEREST_OPTIONS } from '../constants/interests'
+import { GENDER_OPTIONS, LANGUAGE_OPTIONS } from '../constants/profile'
 import 'leaflet/dist/leaflet.css'
 
 // Map keywords in "What do you want to do?" status to an emoji
@@ -59,6 +61,7 @@ export default function MapView() {
   const [currentUserId, setCurrentUserId] = useState(null)
   const [otherUsers, setOtherUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedUser, setSelectedUser] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -121,6 +124,16 @@ export default function MapView() {
 
   const others = otherUsers.filter((u) => u.id !== currentUserId)
 
+  function interestLabel(id) {
+    return INTEREST_OPTIONS.find((o) => o.id === id)?.label ?? id
+  }
+  function genderLabel(id) {
+    return GENDER_OPTIONS.find((o) => o.id === id)?.label ?? id
+  }
+  function languageLabel(id) {
+    return LANGUAGE_OPTIONS.find((o) => o.id === id)?.label ?? id
+  }
+
   function makeEmojiIcon(emojiChar) {
     return L.divIcon({
       html: `<span style="font-size: 2rem; line-height: 1;">${emojiChar}</span>`,
@@ -181,6 +194,7 @@ export default function MapView() {
           const uStatus = user.status?.trim() || ''
           const uEmoji = getEmojiForStatus(uStatus)
           const displayName = user.full_name?.trim() || 'Someone'
+          const ageText = user.age != null && user.age !== '' ? `, ${user.age}` : ''
           return (
             <Marker
               key={user.id}
@@ -188,20 +202,37 @@ export default function MapView() {
               icon={makeEmojiIcon(uEmoji)}
             >
               <Tooltip direction="top" offset={[0, -16]} opacity={1} permanent={false}>
-                <span className="font-medium text-slate-800">{displayName}</span>
+                <span className="font-medium text-slate-800">{displayName}{ageText}</span>
                 {uStatus ? (
                   <p className="text-slate-700 mt-1 mb-0">{uStatus}</p>
                 ) : (
                   <p className="text-slate-500 italic mt-1 mb-0">No status set</p>
                 )}
+                <button
+                  type="button"
+                  className="mt-2 text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedUser(user)
+                  }}
+                >
+                  View Profile
+                </button>
               </Tooltip>
               <Popup>
-                <span className="font-medium text-slate-800">{displayName}</span>
+                <span className="font-medium text-slate-800">{displayName}{ageText}</span>
                 {uStatus ? (
                   <p className="text-slate-700 mt-1">{uStatus}</p>
                 ) : (
                   <p className="text-slate-500 italic mt-1">No status set</p>
                 )}
+                <button
+                  type="button"
+                  className="mt-2 w-full py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium"
+                  onClick={() => setSelectedUser(user)}
+                >
+                  View Profile
+                </button>
               </Popup>
             </Marker>
           )
@@ -213,6 +244,95 @@ export default function MapView() {
       >
         Back to profile
       </Link>
+
+      {selectedUser && (
+        <div
+          className="absolute inset-0 z-[1100] flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Profile"
+          onClick={() => setSelectedUser(null)}
+        >
+          <div
+            className="bg-slate-800 rounded-xl shadow-xl max-w-sm w-full max-h-[90vh] overflow-y-auto text-white p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold">Profile</h3>
+              <button
+                type="button"
+                onClick={() => setSelectedUser(null)}
+                className="text-slate-400 hover:text-white text-2xl leading-none"
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="flex flex-col items-center text-center mb-6">
+              {selectedUser.avatar_url ? (
+                <img
+                  src={selectedUser.avatar_url}
+                  alt=""
+                  className="w-24 h-24 rounded-full object-cover mb-3"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-slate-700 flex items-center justify-center text-3xl font-medium text-slate-400 mb-3">
+                  {(selectedUser.full_name?.trim() || '?').charAt(0).toUpperCase()}
+                </div>
+              )}
+              <h4 className="text-lg font-semibold">
+                {selectedUser.full_name?.trim() || 'Someone'}
+              </h4>
+            </div>
+            {selectedUser.status?.trim() && (
+              <div className="mb-4">
+                <p className="text-slate-400 text-sm font-medium mb-1">What do they want to do?</p>
+                <p className="text-slate-200">{selectedUser.status.trim()}</p>
+              </div>
+            )}
+            <div className="space-y-3 text-sm text-left">
+              <p>
+                <span className="text-slate-400">Age:</span>{' '}
+                {(selectedUser.age != null && selectedUser.age !== '') ? String(selectedUser.age) : '—'}
+              </p>
+              <p>
+                <span className="text-slate-400">Gender:</span>{' '}
+                {selectedUser.gender ? genderLabel(selectedUser.gender) : '—'}
+              </p>
+              <p>
+                <span className="text-slate-400">Languages:</span>{' '}
+                {Array.isArray(selectedUser.languages) && selectedUser.languages.length > 0
+                  ? selectedUser.languages.map(languageLabel).join(', ')
+                  : '—'}
+              </p>
+              <div>
+                <p className="text-slate-400 mb-1">Interests</p>
+                {Array.isArray(selectedUser.interests) && selectedUser.interests.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedUser.interests.map((id) => (
+                      <span
+                        key={id}
+                        className="px-2 py-1 rounded-full bg-slate-700 text-slate-200 text-xs"
+                      >
+                        {interestLabel(id)}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-slate-500">—</p>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedUser(null)}
+              className="mt-6 w-full py-2 rounded-lg bg-slate-700 hover:bg-slate-600 font-medium"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

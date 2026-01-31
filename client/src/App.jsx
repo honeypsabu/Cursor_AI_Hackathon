@@ -5,6 +5,8 @@ import SignUp from './pages/SignUp'
 import ViewProfile from './pages/ViewProfile'
 import EditProfile from './pages/EditProfile'
 import MapView from './pages/MapView'
+import ChatsList from './pages/ChatsList'
+import Chat from './pages/Chat'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -34,6 +36,22 @@ function App() {
         element={
           <ProtectedRoute>
             <MapView />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/chats"
+        element={
+          <ProtectedRoute>
+            <ChatsList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/chats/:connectionId"
+        element={
+          <ProtectedRoute>
+            <Chat />
           </ProtectedRoute>
         }
       />

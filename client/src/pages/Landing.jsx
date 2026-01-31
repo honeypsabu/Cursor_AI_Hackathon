@@ -19,14 +19,22 @@ export default function Landing() {
       <p className="text-text-muted text-lg md:text-xl mb-10 text-center max-w-xl leading-relaxed">
         Connection is better in person. With Glimmer, find nearby friends who share your wavelength and start making memories through the activities you love.
       </p>
-      <div className="flex flex-col sm:flex-row gap-4 items-center">
+      <div className="flex flex-col sm:flex-row gap-4 items-center flex-wrap justify-center">
         {user ? (
-          <Link
-            to="/profile"
-            className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium transition"
-          >
-            View my profile
-          </Link>
+          <>
+            <Link
+              to="/profile"
+              className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium transition"
+            >
+              View my profile
+            </Link>
+            <Link
+              to="/chats"
+              className="px-6 py-3 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium transition"
+            >
+              Chats
+            </Link>
+          </>
         ) : (
           <>
             <Link

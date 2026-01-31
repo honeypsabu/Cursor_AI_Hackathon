@@ -8,6 +8,8 @@ import MapView from './pages/MapView'
 import Notifications from './pages/Notifications'
 import Groups from './pages/Groups'
 import GroupChat from './pages/GroupChat'
+import ChatsList from './pages/ChatsList'
+import Chat from './pages/Chat'
 import ProtectedRoute from './components/ProtectedRoute'
 import ProtectedLayout from './components/ProtectedLayout'
 
@@ -24,6 +26,8 @@ function App() {
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/groups" element={<Groups />} />
         <Route path="/groups/:groupId" element={<GroupChat />} />
+        <Route path="/chats" element={<ChatsList />} />
+        <Route path="/chats/:connectionId" element={<Chat />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

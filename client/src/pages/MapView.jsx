@@ -90,7 +90,55 @@ export default function MapView() {
   const [otherUsers, setOtherUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState(null)
+  const [connectionStatus, setConnectionStatus] = useState(null) // 'connected' | 'pending_sent' | 'pending_received' | null
+  const [connectionId, setConnectionId] = useState(null)
+  const [sendingRequest, setSendingRequest] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!selectedUser || !currentUserId) {
+      setConnectionStatus(null)
+      setConnectionId(null)
+      return
+    }
+    async function checkConnection() {
+      const otherId = selectedUser.id
+      const [u1, u2] = currentUserId < otherId ? [currentUserId, otherId] : [otherId, currentUserId]
+      const { data: conn } = await supabase.from('connections').select('id').eq('user1_id', u1).eq('user2_id', u2).maybeSingle()
+      if (conn) {
+        setConnectionStatus('connected')
+        setConnectionId(conn.id)
+        return
+      }
+      const { data: sent } = await supabase.from('connection_requests').select('id').eq('from_user_id', currentUserId).eq('to_user_id', otherId).eq('status', 'pending').maybeSingle()
+      if (sent) {
+        setConnectionStatus('pending_sent')
+        setConnectionId(null)
+        return
+      }
+      const { data: received } = await supabase.from('connection_requests').select('id').eq('from_user_id', otherId).eq('to_user_id', currentUserId).eq('status', 'pending').maybeSingle()
+      if (received) {
+        setConnectionStatus('pending_received')
+        setConnectionId(null)
+        return
+      }
+      setConnectionStatus(null)
+      setConnectionId(null)
+    }
+    checkConnection()
+  }, [selectedUser?.id, currentUserId])
+
+  async function sendConnectionRequest() {
+    if (!selectedUser || !currentUserId || sendingRequest) return
+    setSendingRequest(true)
+    const { error } = await supabase.from('connection_requests').insert({
+      from_user_id: currentUserId,
+      to_user_id: selectedUser.id,
+      status: 'pending',
+    })
+    setSendingRequest(false)
+    if (!error) setConnectionStatus('pending_sent')
+  }
 
   useEffect(() => {
     async function load() {
@@ -266,13 +314,21 @@ export default function MapView() {
           )
         })}
       </MapContainer>
-      <Link
-        to="/profile"
-        className="absolute top-4 left-4 z-[1000] flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/95 backdrop-blur-md text-text hover:bg-slate-50 font-medium shadow-xl border border-slate-200 transition-all"
-      >
-        <span className="text-lg">←</span>
-        Back to profile
-      </Link>
+      <div className="absolute top-4 left-4 z-[1000] flex items-center gap-2">
+        <Link
+          to="/profile"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/95 backdrop-blur-md text-text hover:bg-slate-50 font-medium shadow-xl border border-slate-200 transition-all"
+        >
+          <span className="text-lg">←</span>
+          Back to profile
+        </Link>
+        <Link
+          to="/chats"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/95 backdrop-blur-md text-primary hover:bg-primary/10 font-medium shadow-xl border border-slate-200 transition-all"
+        >
+          Chats
+        </Link>
+      </div>
 
       {selectedUser && (
         <div
@@ -352,13 +408,37 @@ export default function MapView() {
                 )}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setSelectedUser(null)}
-              className="mt-6 w-full py-3 rounded-xl bg-primary hover:bg-primary-hover text-white font-medium transition-colors"
-            >
-              Close
-            </button>
+            <div className="mt-6 flex flex-col gap-2">
+              {connectionStatus === 'connected' && connectionId && (
+                <Link
+                  to={`/chats/${connectionId}`}
+                  className="w-full py-3 rounded-xl bg-primary hover:bg-primary-hover text-white font-medium transition-colors text-center"
+                  onClick={() => setSelectedUser(null)}
+                >
+                  Chat
+                </Link>
+              )}
+              {connectionStatus === 'pending_sent' && (
+                <p className="text-center text-text-muted text-sm py-2">Request sent — they&apos;ll see it in Chats</p>
+              )}
+              {connectionStatus === null && (
+                <button
+                  type="button"
+                  onClick={sendConnectionRequest}
+                  disabled={sendingRequest}
+                  className="w-full py-3 rounded-xl bg-primary hover:bg-primary-hover text-white font-medium transition-colors disabled:opacity-50"
+                >
+                  {sendingRequest ? 'Sending...' : 'Connect'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setSelectedUser(null)}
+                className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-text font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -19,26 +19,11 @@ export default function Landing() {
       <p className="text-text-muted text-lg md:text-xl mb-10 text-center max-w-xl leading-relaxed">
         Connection is better in person. With Glimmer, find nearby friends who share your wavelength and start making memories through the activities you love.
       </p>
-<<<<<<< HEAD
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Link
-          to="/signup"
-          className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium transition"
-        >
-          Sign up with Email
-        </Link>
-        <Link
-          to="/login"
-          className="px-6 py-3 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium transition"
-        >
-          Log in
-        </Link>
-=======
       <div className="flex flex-col sm:flex-row gap-4 items-center">
         {user ? (
           <Link
             to="/profile"
-            className="px-6 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 font-medium transition"
+            className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium transition"
           >
             View my profile
           </Link>
@@ -46,19 +31,18 @@ export default function Landing() {
           <>
             <Link
               to="/signup"
-              className="px-6 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 font-medium transition"
+              className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium transition"
             >
               Sign up with Email
             </Link>
             <Link
               to="/login"
-              className="px-6 py-3 rounded-lg border border-slate-500 hover:border-slate-400 font-medium transition"
+              className="px-6 py-3 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium transition"
             >
               Log in
             </Link>
           </>
         )}
->>>>>>> 9c5d87a11cb9b5153e1033fbc465d4992466dd33
       </div>
     </div>
   )

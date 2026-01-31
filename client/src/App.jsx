@@ -2,7 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
-import Profile from './pages/Profile'
+import ViewProfile from './pages/ViewProfile'
+import EditProfile from './pages/EditProfile'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -15,7 +16,15 @@ function App() {
         path="/profile"
         element={
           <ProtectedRoute>
-            <Profile />
+            <ViewProfile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/edit"
+        element={
+          <ProtectedRoute>
+            <EditProfile />
           </ProtectedRoute>
         }
       />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MapContainer, TileLayer, Circle, Marker, Popup, Tooltip, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Circle, Marker, Tooltip, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
 import { INTEREST_OPTIONS } from '../constants/interests'
@@ -49,11 +49,20 @@ function CenterMap({ center, zoom }) {
   return null
 }
 
-function roundToArea(lat, lng) {
-  return [
-    Math.round(lat * 100) / 100,
-    Math.round(lng * 100) / 100,
-  ]
+// Deterministic offset from user ID so people with same postal code don't stack exactly on top of each other
+function getMarkerOffset(userId) {
+  let hash = 0
+  for (let i = 0; i < userId.length; i++) {
+    hash = ((hash << 5) - hash) + userId.charCodeAt(i)
+    hash = hash & hash
+  }
+  const normalized = (Math.abs(hash) % 10000) / 10000
+  const angle = normalized * 2 * Math.PI
+  const radius = 0.0012
+  return {
+    lat: Math.cos(angle) * radius * 0.5,
+    lng: Math.sin(angle) * radius,
+  }
 }
 
 export default function MapView() {
@@ -107,7 +116,7 @@ export default function MapView() {
       <div className="fixed inset-0 bg-amber-950 text-white flex flex-col items-center justify-center z-50 px-4">
         <div className="w-16 h-16 rounded-2xl bg-amber-800/60 flex items-center justify-center text-3xl mb-6">📍</div>
         <p className="text-amber-100 text-center mb-6 max-w-sm text-lg">
-          Add your address in Edit Profile to see your area on the map.
+          Add your postal code, city and country in Edit Profile to see your area on the map.
         </p>
         <Link
           to="/profile"
@@ -119,8 +128,8 @@ export default function MapView() {
     )
   }
 
-  const [areaLat, areaLng] = roundToArea(lat, lng)
-  const center = [areaLat, areaLng]
+  // Use raw coordinates for "You" – rounding to 2 decimals (~1 km) can shift into wrong postal code
+  const center = [lat, lng]
   const status = profile?.status?.trim() || ''
   const emoji = getEmojiForStatus(status)
 
@@ -176,56 +185,29 @@ export default function MapView() {
         />
         <Marker position={center} icon={myEmojiIcon}>
           <Tooltip direction="top" offset={[0, -16]} opacity={1} permanent={false}>
-            <span className="font-medium text-slate-800">You</span>
-            {status ? (
-              <p className="text-slate-700 mt-1 mb-0">{status}</p>
-            ) : (
-              <p className="text-slate-500 italic mt-1 mb-0">No status set</p>
-            )}
-          </Tooltip>
-          <Popup>
             <div className="min-w-[140px]">
               <span className="font-semibold text-slate-800">You</span>
               {status ? (
-                <p className="text-slate-600 mt-1 text-sm">{status}</p>
+                <p className="text-slate-600 mt-1 text-sm mb-0">{status}</p>
               ) : (
-                <p className="text-slate-500 italic mt-1 text-sm">No status set</p>
+                <p className="text-slate-500 italic mt-1 text-sm mb-0">No status set</p>
               )}
             </div>
-          </Popup>
+          </Tooltip>
         </Marker>
         {others.map((user) => {
           const uLat = user.location_lat
           const uLng = user.location_lng
           if (typeof uLat !== 'number' || typeof uLng !== 'number' || isNaN(uLat) || isNaN(uLng)) return null
+          const offset = getMarkerOffset(user.id)
+          const markerLat = uLat + offset.lat
+          const markerLng = uLng + offset.lng
           const uStatus = user.status?.trim() || ''
           const uEmoji = getEmojiForStatus(uStatus)
           const displayName = user.full_name?.trim() || 'Someone'
           const ageText = user.age != null && user.age !== '' ? `, ${user.age}` : ''
           return (
-            <Marker
-              key={user.id}
-              position={[uLat, uLng]}
-              icon={makeEmojiIcon(uEmoji)}
-            >
-              <Tooltip direction="top" offset={[0, -16]} opacity={1} permanent={false}>
-                <span className="font-medium text-slate-800">{displayName}{ageText}</span>
-                {uStatus ? (
-                  <p className="text-slate-700 mt-1 mb-0">{uStatus}</p>
-                ) : (
-                  <p className="text-slate-500 italic mt-1 mb-0">No status set</p>
-                )}
-                <button
-                  type="button"
-                  className="mt-2 text-sm font-medium text-amber-600 hover:text-amber-500"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setSelectedUser(user)
-                  }}
-                >
-                  View Profile
-                </button>
-              </Tooltip>
+            <Marker key={user.id} position={[markerLat, markerLng]} icon={makeEmojiIcon(uEmoji)}>
               <Popup>
                 <div className="min-w-[160px]">
                   <span className="font-semibold text-slate-800">{displayName}{ageText}</span>

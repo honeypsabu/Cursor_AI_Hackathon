@@ -6,17 +6,65 @@ import { GENDER_OPTIONS, LANGUAGE_OPTIONS } from '../constants/profile'
 
 const AVATAR_BUCKET = 'avatars'
 
-async function geocodeAddress(street, city, postal, country) {
-  const parts = [street, city, postal, country].filter(Boolean)
-  if (parts.length === 0) return null
+async function geocodeAddress(postal, city, country) {
+  const p = (v) => (v || '').trim()
+  const postalStr = p(postal)
+  const cityStr = p(city)
+  const countryStr = p(country)
+  if (!postalStr && !cityStr && !countryStr) return null
+
+  // Build query: postal code + city + country for best match
+  const parts = [postalStr, cityStr, countryStr].filter(Boolean)
   const query = parts.join(', ')
-  const params = new URLSearchParams({ q: query, format: 'json', limit: 1 })
-  const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
-    headers: { 'Accept-Language': 'en' },
-  })
-  const data = await res.json()
-  if (!Array.isArray(data) || data.length === 0) return null
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+
+  // 1. Try Photon first – better for postal-code-level results (returns actual postal-code area)
+  try {
+    const photonParams = new URLSearchParams({ q: query, limit: 5 })
+    const photonRes = await fetch(`https://photon.komoot.io/api/?${photonParams}`)
+    const photonData = await photonRes.json()
+    if (photonData?.features?.length > 0) {
+      // Prefer result whose postcode matches or starts with user's postal code
+      const norm = (s) => (s || '').replace(/\s/g, '').toLowerCase()
+      const userPostal = norm(postalStr)
+      const match = photonData.features.find(
+        (f) => userPostal && norm(f.properties?.postcode || '').startsWith(userPostal)
+      ) || photonData.features.find(
+        (f) => userPostal && norm(f.properties?.postcode || '').includes(userPostal)
+      )
+      const feat = match || photonData.features[0]
+      const [lng, lat] = feat.geometry.coordinates
+      return { lat, lng }
+    }
+  } catch (_) {}
+
+  // 2. Fallback to Nominatim with structured params
+  try {
+    const params = new URLSearchParams({ format: 'json', limit: 1 })
+    if (postalStr) params.set('postalcode', postalStr)
+    if (cityStr) params.set('city', cityStr)
+    if (countryStr) params.set('country', countryStr)
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+      headers: { 'Accept-Language': 'en', 'User-Agent': 'GlimmerApp/1.0' },
+    })
+    const data = await res.json()
+    if (Array.isArray(data) && data.length > 0) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+    }
+  } catch (_) {}
+
+  // 3. Fallback to Nominatim free-form query
+  try {
+    const params = new URLSearchParams({ q: query, format: 'json', limit: 1 })
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+      headers: { 'Accept-Language': 'en', 'User-Agent': 'GlimmerApp/1.0' },
+    })
+    const data = await res.json()
+    if (Array.isArray(data) && data.length > 0) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+    }
+  } catch (_) {}
+
+  return null
 }
 
 export default function EditProfile() {
@@ -28,9 +76,8 @@ export default function EditProfile() {
   const [gender, setGender] = useState('')
   const [selectedLanguages, setSelectedLanguages] = useState([])
   const [selectedInterests, setSelectedInterests] = useState([])
-  const [addressStreet, setAddressStreet] = useState('')
-  const [addressCity, setAddressCity] = useState('')
   const [addressPostal, setAddressPostal] = useState('')
+  const [addressCity, setAddressCity] = useState('')
   const [addressCountry, setAddressCountry] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -64,10 +111,15 @@ export default function EditProfile() {
       setSelectedLanguages(Array.isArray(data?.languages) ? data.languages : [])
       setSelectedInterests(Array.isArray(data?.interests) ? data.interests : [])
       const addrParts = (data?.address || '').split('|')
-      setAddressStreet(addrParts[0] || '')
-      setAddressCity(addrParts[1] || '')
-      setAddressPostal(addrParts[2] || '')
-      setAddressCountry(addrParts[3] || '')
+      if (addrParts.length >= 4) {
+        setAddressPostal(addrParts[2] || '')
+        setAddressCity(addrParts[1] || '')
+        setAddressCountry(addrParts[3] || '')
+      } else if (addrParts.length >= 3) {
+        setAddressPostal(addrParts[0] || '')
+        setAddressCity(addrParts[1] || '')
+        setAddressCountry(addrParts[2] || '')
+      }
       setLoading(false)
     }
     load()
@@ -100,8 +152,8 @@ export default function EditProfile() {
     if (!user) return
     let locationLat = null
     let locationLng = null
-    if ([addressStreet, addressCity, addressPostal, addressCountry].some(Boolean)) {
-      const coords = await geocodeAddress(addressStreet, addressCity, addressPostal, addressCountry)
+    if ([addressPostal, addressCity, addressCountry].some(Boolean)) {
+      const coords = await geocodeAddress(addressPostal, addressCity, addressCountry)
       if (coords) {
         locationLat = coords.lat
         locationLng = coords.lng
@@ -120,8 +172,8 @@ export default function EditProfile() {
           gender: gender || null,
           languages: selectedLanguages.length ? selectedLanguages : [],
           interests: selectedInterests.length ? selectedInterests : [],
-          address: [addressStreet, addressCity, addressPostal, addressCountry].some(Boolean)
-            ? [addressStreet, addressCity, addressPostal, addressCountry].join('|')
+          address: [addressPostal, addressCity, addressCountry].some(Boolean)
+            ? [addressPostal, addressCity, addressCountry].join('|')
             : null,
           location_lat: locationLat,
           location_lng: locationLng,
@@ -143,8 +195,8 @@ export default function EditProfile() {
       gender: gender || '',
       languages: selectedLanguages,
       interests: selectedInterests,
-      address: [addressStreet, addressCity, addressPostal, addressCountry].some(Boolean)
-        ? [addressStreet, addressCity, addressPostal, addressCountry].join('|')
+      address: [addressPostal, addressCity, addressCountry].some(Boolean)
+        ? [addressPostal, addressCity, addressCountry].join('|')
         : null,
       location_lat: locationLat,
       location_lng: locationLng,
@@ -278,34 +330,24 @@ export default function EditProfile() {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1">
-              Address <span className="text-slate-500">(private — not shared)</span>
+              Area <span className="text-slate-500">(private — used for map)</span>
             </label>
             <input
-              id="address_street"
+              id="address_postal"
               type="text"
-              value={addressStreet}
-              onChange={(e) => setAddressStreet(e.target.value)}
+              value={addressPostal}
+              onChange={(e) => setAddressPostal(e.target.value)}
               className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-2"
-              placeholder="Street address"
+              placeholder="Postal code"
             />
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              <input
-                id="address_city"
-                type="text"
-                value={addressCity}
-                onChange={(e) => setAddressCity(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                placeholder="City"
-              />
-              <input
-                id="address_postal"
-                type="text"
-                value={addressPostal}
-                onChange={(e) => setAddressPostal(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                placeholder="Postal / ZIP code"
-              />
-            </div>
+            <input
+              id="address_city"
+              type="text"
+              value={addressCity}
+              onChange={(e) => setAddressCity(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-2"
+              placeholder="City"
+            />
             <input
               id="address_country"
               type="text"

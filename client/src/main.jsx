@@ -27,9 +27,10 @@ function Root() {
         <h1 style={{ fontSize: 18, marginBottom: 8 }}>Missing configuration</h1>
         <p style={{ marginBottom: 16, maxWidth: 400 }}>
           Add <code style={{ background: '#1e293b', padding: '2px 6px', borderRadius: 4 }}>VITE_SUPABASE_URL</code> and{' '}
-          <code style={{ background: '#1e293b', padding: '2px 6px', borderRadius: 4 }}>VITE_SUPABASE_ANON_KEY</code> in your Vercel project Environment Variables, then redeploy.
+          <code style={{ background: '#1e293b', padding: '2px 6px', borderRadius: 4 }}>VITE_SUPABASE_ANON_KEY</code> to{' '}
+          <code style={{ background: '#1e293b', padding: '2px 6px', borderRadius: 4 }}>client/.env</code> for local dev.
         </p>
-        <p style={{ fontSize: 14, color: '#94a3b8' }}>Vite bakes env at build time, so you must redeploy after adding them.</p>
+        <p style={{ fontSize: 14, color: '#94a3b8' }}>Get these from Supabase Dashboard → Project Settings → API.</p>
       </div>
     )
   }

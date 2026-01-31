@@ -6,6 +6,19 @@ import { GENDER_OPTIONS, LANGUAGE_OPTIONS } from '../constants/profile'
 
 const AVATAR_BUCKET = 'avatars'
 
+async function geocodeAddress(street, city, postal, country) {
+  const parts = [street, city, postal, country].filter(Boolean)
+  if (parts.length === 0) return null
+  const query = parts.join(', ')
+  const params = new URLSearchParams({ q: query, format: 'json', limit: 1 })
+  const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+    headers: { 'Accept-Language': 'en' },
+  })
+  const data = await res.json()
+  if (!Array.isArray(data) || data.length === 0) return null
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+}
+
 export default function EditProfile() {
   const [profile, setProfile] = useState(null)
   const [fullName, setFullName] = useState('')
@@ -15,6 +28,10 @@ export default function EditProfile() {
   const [gender, setGender] = useState('')
   const [selectedLanguages, setSelectedLanguages] = useState([])
   const [selectedInterests, setSelectedInterests] = useState([])
+  const [addressStreet, setAddressStreet] = useState('')
+  const [addressCity, setAddressCity] = useState('')
+  const [addressPostal, setAddressPostal] = useState('')
+  const [addressCountry, setAddressCountry] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -46,6 +63,11 @@ export default function EditProfile() {
       setGender(data?.gender ?? '')
       setSelectedLanguages(Array.isArray(data?.languages) ? data.languages : [])
       setSelectedInterests(Array.isArray(data?.interests) ? data.interests : [])
+      const addrParts = (data?.address || '').split('|')
+      setAddressStreet(addrParts[0] || '')
+      setAddressCity(addrParts[1] || '')
+      setAddressPostal(addrParts[2] || '')
+      setAddressCountry(addrParts[3] || '')
       setLoading(false)
     }
     load()
@@ -76,6 +98,15 @@ export default function EditProfile() {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
+    let locationLat = null
+    let locationLng = null
+    if ([addressStreet, addressCity, addressPostal, addressCountry].some(Boolean)) {
+      const coords = await geocodeAddress(addressStreet, addressCity, addressPostal, addressCountry)
+      if (coords) {
+        locationLat = coords.lat
+        locationLng = coords.lng
+      }
+    }
     const { error: err } = await supabase
       .from('profiles')
       .upsert(
@@ -89,6 +120,11 @@ export default function EditProfile() {
           gender: gender || null,
           languages: selectedLanguages.length ? selectedLanguages : [],
           interests: selectedInterests.length ? selectedInterests : [],
+          address: [addressStreet, addressCity, addressPostal, addressCountry].some(Boolean)
+            ? [addressStreet, addressCity, addressPostal, addressCountry].join('|')
+            : null,
+          location_lat: locationLat,
+          location_lng: locationLng,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'id' }
@@ -107,6 +143,11 @@ export default function EditProfile() {
       gender: gender || '',
       languages: selectedLanguages,
       interests: selectedInterests,
+      address: [addressStreet, addressCity, addressPostal, addressCountry].some(Boolean)
+        ? [addressStreet, addressCity, addressPostal, addressCountry].join('|')
+        : null,
+      location_lat: locationLat,
+      location_lng: locationLng,
     }))
     navigate('/profile', { replace: true })
   }
@@ -234,6 +275,45 @@ export default function EditProfile() {
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1">
+              Address <span className="text-slate-500">(private — not shared)</span>
+            </label>
+            <input
+              id="address_street"
+              type="text"
+              value={addressStreet}
+              onChange={(e) => setAddressStreet(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-2"
+              placeholder="Street address"
+            />
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <input
+                id="address_city"
+                type="text"
+                value={addressCity}
+                onChange={(e) => setAddressCity(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="City"
+              />
+              <input
+                id="address_postal"
+                type="text"
+                value={addressPostal}
+                onChange={(e) => setAddressPostal(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Postal / ZIP code"
+              />
+            </div>
+            <input
+              id="address_country"
+              type="text"
+              value={addressCountry}
+              onChange={(e) => setAddressCountry(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Country"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">

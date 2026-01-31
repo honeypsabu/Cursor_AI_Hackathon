@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import ViewProfile from './pages/ViewProfile'
 import EditProfile from './pages/EditProfile'
+import MapView from './pages/MapView'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -25,6 +26,14 @@ function App() {
         element={
           <ProtectedRoute>
             <EditProfile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/map"
+        element={
+          <ProtectedRoute>
+            <MapView />
           </ProtectedRoute>
         }
       />

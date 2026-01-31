@@ -4,6 +4,7 @@ export const INTEREST_OPTIONS = [
   { id: 'sports', label: 'Sports' },
   { id: 'music', label: 'Music' },
   { id: 'outdoor', label: 'Outdoor' },
+  { id: 'hiking', label: 'Hiking' },
   { id: 'painting', label: 'Painting' },
   { id: 'clubbing', label: 'Clubbing' },
   { id: 'gaming', label: 'Gaming' },

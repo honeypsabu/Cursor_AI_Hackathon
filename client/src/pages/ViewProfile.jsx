@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { INTEREST_OPTIONS } from '../constants/interests'
 import { GENDER_OPTIONS, LANGUAGE_OPTIONS } from '../constants/profile'
+import { useAutoMatch } from '../hooks/useAutoMatch'
 
 export default function ViewProfile() {
   const [profile, setProfile] = useState(null)
+  const [myGroups, setMyGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [editingStatus, setEditingStatus] = useState(false)
@@ -34,15 +36,14 @@ export default function ViewProfile() {
         return
       }
       setProfile(data || { id: user.id, email: user.email, full_name: '', avatar_url: '', status: '', interests: [], age: null, gender: '', languages: [] })
+      const { data: groups } = await supabase.rpc('get_my_groups')
+      setMyGroups(groups || [])
       setLoading(false)
     }
     load()
   }, [navigate])
 
-  async function handleSignOut() {
-    await supabase.auth.signOut()
-    navigate('/', { replace: true })
-  }
+  useAutoMatch(profile)
 
   async function saveStatus() {
     if (!profile?.id) return
@@ -123,21 +124,12 @@ export default function ViewProfile() {
       <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-xl border border-slate-200">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-text">Your profile</h2>
-          <div className="flex items-center gap-3">
-            <Link
-              to="/profile/edit"
-              className="text-sm text-primary hover:text-primary-hover font-medium"
-            >
-              Edit profile
-            </Link>
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="text-sm text-text-muted hover:text-text"
-            >
-              Sign out
-            </button>
-          </div>
+          <Link
+            to="/profile/edit"
+            className="text-sm text-primary hover:text-primary-hover font-medium"
+          >
+            Edit profile
+          </Link>
         </div>
         {error && (
           <p className="mb-4 text-red-500 text-sm">{error}</p>
@@ -303,6 +295,23 @@ export default function ViewProfile() {
             </button>
           )}
         </div>
+        )}
+        {myGroups.length > 0 && (
+          <div className="mb-6">
+            <p className="text-sm font-medium text-slate-300 mb-2">My groups</p>
+            <div className="space-y-2">
+              {myGroups.map((g) => (
+                <Link
+                  key={g.group_id}
+                  to={`/groups/${g.group_id}`}
+                  className="block p-3 rounded-lg bg-slate-700/50 border border-slate-600 hover:border-slate-500 transition"
+                >
+                  <p className="font-medium text-white">{g.group_name}</p>
+                  <p className="text-slate-400 text-sm">{g.group_activity || `${g.member_count} members`}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
         )}
         <div className="flex flex-wrap justify-center gap-3">
           <Link

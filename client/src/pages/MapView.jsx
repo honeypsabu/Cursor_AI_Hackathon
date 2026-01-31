@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Circle, Marker, Tooltip, Popup, useMap } from 
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
 import { INTEREST_OPTIONS } from '../constants/interests'
+import { useAutoMatch } from '../hooks/useAutoMatch'
 import { GENDER_OPTIONS, LANGUAGE_OPTIONS } from '../constants/profile'
 import 'leaflet/dist/leaflet.css'
 
@@ -101,7 +102,7 @@ export default function MapView() {
       setCurrentUserId(user.id)
       const { data: myProfile, error: err } = await supabase
         .from('profiles')
-        .select('location_lat, location_lng, status')
+        .select('id, location_lat, location_lng, status, interests')
         .eq('id', user.id)
         .single()
       if (err && err.code !== 'PGRST116') {
@@ -115,6 +116,8 @@ export default function MapView() {
     }
     load()
   }, [navigate])
+
+  useAutoMatch(profile)
 
   if (loading) {
     return (

@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim()
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim()
 
 let supabase
 
@@ -21,9 +21,11 @@ if (supabaseUrl && supabaseAnonKey) {
     },
     from: () => ({
       select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
+      insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
       upsert: () => Promise.resolve({ error: new Error('Configure Supabase in .env') }),
       update: () => ({ eq: () => Promise.resolve({ error: new Error('Configure Supabase in .env') }) }),
     }),
+    rpc: () => Promise.resolve({ data: null, error: null }),
     storage: {
       from: () => ({
         upload: () => Promise.resolve({ error: new Error('Configure Supabase in .env') }),

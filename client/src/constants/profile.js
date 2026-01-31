@@ -21,5 +21,6 @@ export const LANGUAGE_OPTIONS = [
   { id: 'italian', label: 'Italian' },
   { id: 'dutch', label: 'Dutch' },
   { id: 'tamil', label: 'Tamil' },
+  { id: 'malayalam', label: 'Malayalam' },
   { id: 'other', label: 'Other' },
 ]

@@ -18,6 +18,7 @@ const STATUS_EMOJI_KEYWORDS = [
   { keywords: ['read', 'book'], emoji: '📚' },
   { keywords: ['movie', 'film', 'cinema'], emoji: '🎬' },
   { keywords: ['music', 'concert', 'gig'], emoji: '🎵' },
+  { keywords: ['badminton', 'tennis', 'squash', 'racket', 'table tennis'], emoji: '🏸' },
   { keywords: ['game', 'gaming', 'play'], emoji: '🎮' },
   { keywords: ['hike', 'hiking', 'trail'], emoji: '🥾' },
   { keywords: ['bike', 'cycling', 'cycle'], emoji: '🚴' },
@@ -54,6 +55,39 @@ function roundToArea(lat, lng) {
     Math.round(lat * 100) / 100,
     Math.round(lng * 100) / 100,
   ]
+}
+
+// Group users by rounded position (4 decimals ~11m) and spread overlapping markers in a circle
+function spreadOverlappingMarkers(users) {
+  const PRECISION = 4
+  const RADIUS_DEG = 0.00025 // ~25–30m offset so markers don't overlap
+  const groups = new Map()
+  for (const u of users) {
+    const lat = u.location_lat
+    const lng = u.location_lng
+    if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) continue
+    const key = `${Math.round(lat * 10 ** PRECISION) / 10 ** PRECISION}_${Math.round(lng * 10 ** PRECISION) / 10 ** PRECISION}`
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key).push(u)
+  }
+  const result = []
+  for (const [, group] of groups) {
+    const n = group.length
+    const baseLat = group[0].location_lat
+    const baseLng = group[0].location_lng
+    const cosLat = Math.cos((baseLat * Math.PI) / 180)
+    group.forEach((u, i) => {
+      if (n === 1) {
+        result.push({ user: u, lat: baseLat, lng: baseLng })
+      } else {
+        const angle = (2 * Math.PI * i) / n
+        const dLat = RADIUS_DEG * Math.cos(angle)
+        const dLng = (RADIUS_DEG * Math.sin(angle)) / cosLat
+        result.push({ user: u, lat: baseLat + dLat, lng: baseLng + dLng })
+      }
+    })
+  }
+  return result
 }
 
 export default function MapView() {
@@ -194,10 +228,7 @@ export default function MapView() {
             </div>
           </Popup>
         </Marker>
-        {others.map((user) => {
-          const uLat = user.location_lat
-          const uLng = user.location_lng
-          if (typeof uLat !== 'number' || typeof uLng !== 'number' || isNaN(uLat) || isNaN(uLng)) return null
+        {spreadOverlappingMarkers(others).map(({ user, lat, lng }) => {
           const uStatus = user.status?.trim() || ''
           const uEmoji = getEmojiForStatus(uStatus)
           const displayName = user.full_name?.trim() || 'Someone'
@@ -205,7 +236,7 @@ export default function MapView() {
           return (
             <Marker
               key={user.id}
-              position={[uLat, uLng]}
+              position={[lat, lng]}
               icon={makeEmojiIcon(uEmoji)}
             >
               <Tooltip direction="top" offset={[0, -16]} opacity={1} permanent={false}>

@@ -91,8 +91,9 @@ export default function MapView() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-slate-900 text-white flex items-center justify-center z-50">
-        <p className="text-slate-400">Loading map...</p>
+      <div className="fixed inset-0 bg-amber-950 text-white flex flex-col items-center justify-center z-50">
+        <div className="w-12 h-12 rounded-full border-2 border-amber-500/30 border-t-amber-400 animate-spin mb-4" />
+        <p className="text-amber-200 font-medium">Loading map...</p>
       </div>
     )
   }
@@ -103,13 +104,14 @@ export default function MapView() {
 
   if (!hasCoords) {
     return (
-      <div className="fixed inset-0 bg-slate-900 text-white flex flex-col items-center justify-center z-50 px-4">
-        <p className="text-slate-300 text-center mb-6 max-w-sm">
+      <div className="fixed inset-0 bg-amber-950 text-white flex flex-col items-center justify-center z-50 px-4">
+        <div className="w-16 h-16 rounded-2xl bg-amber-800/60 flex items-center justify-center text-3xl mb-6">📍</div>
+        <p className="text-amber-100 text-center mb-6 max-w-sm text-lg">
           Add your address in Edit Profile to see your area on the map.
         </p>
         <Link
           to="/profile"
-          className="px-6 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 font-medium"
+          className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-semibold transition-colors shadow-lg shadow-amber-500/40"
         >
           Back to profile
         </Link>
@@ -134,16 +136,18 @@ export default function MapView() {
     return LANGUAGE_OPTIONS.find((o) => o.id === id)?.label ?? id
   }
 
-  function makeEmojiIcon(emojiChar) {
+  function makeEmojiIcon(emojiChar, isYou = false) {
+    const size = isYou ? 40 : 36
+    const anchor = size / 2
     return L.divIcon({
-      html: `<span style="font-size: 2rem; line-height: 1;">${emojiChar}</span>`,
+      html: `<div class="map-marker ${isYou ? 'map-marker-you' : ''}">${emojiChar}</div>`,
       className: 'emoji-marker',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16],
+      iconSize: [size, size],
+      iconAnchor: [anchor, anchor],
     })
   }
 
-  const myEmojiIcon = makeEmojiIcon(emoji)
+  const myEmojiIcon = makeEmojiIcon(emoji, true)
 
   return (
     <div className="fixed inset-0 z-40 w-screen h-screen">
@@ -156,17 +160,18 @@ export default function MapView() {
       >
         <CenterMap center={center} zoom={13} />
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://carto.com">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
         />
         <Circle
           center={center}
           radius={800}
           pathOptions={{
-            color: '#10b981',
-            fillColor: '#10b981',
-            fillOpacity: 0.2,
+            color: '#f97316',
+            fillColor: '#fb923c',
+            fillOpacity: 0.22,
             weight: 2,
+            dashArray: '8, 8',
           }}
         />
         <Marker position={center} icon={myEmojiIcon}>
@@ -179,12 +184,14 @@ export default function MapView() {
             )}
           </Tooltip>
           <Popup>
-            <span className="font-medium text-slate-800">You</span>
-            {status ? (
-              <p className="text-slate-700 mt-1">{status}</p>
-            ) : (
-              <p className="text-slate-500 italic mt-1">No status set</p>
-            )}
+            <div className="min-w-[140px]">
+              <span className="font-semibold text-slate-800">You</span>
+              {status ? (
+                <p className="text-slate-600 mt-1 text-sm">{status}</p>
+              ) : (
+                <p className="text-slate-500 italic mt-1 text-sm">No status set</p>
+              )}
+            </div>
           </Popup>
         </Marker>
         {others.map((user) => {
@@ -210,7 +217,7 @@ export default function MapView() {
                 )}
                 <button
                   type="button"
-                  className="mt-2 text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                  className="mt-2 text-sm font-medium text-amber-600 hover:text-amber-500"
                   onClick={(e) => {
                     e.stopPropagation()
                     setSelectedUser(user)
@@ -220,19 +227,21 @@ export default function MapView() {
                 </button>
               </Tooltip>
               <Popup>
-                <span className="font-medium text-slate-800">{displayName}{ageText}</span>
-                {uStatus ? (
-                  <p className="text-slate-700 mt-1">{uStatus}</p>
-                ) : (
-                  <p className="text-slate-500 italic mt-1">No status set</p>
-                )}
-                <button
-                  type="button"
-                  className="mt-2 w-full py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium"
-                  onClick={() => setSelectedUser(user)}
-                >
-                  View Profile
-                </button>
+                <div className="min-w-[160px]">
+                  <span className="font-semibold text-slate-800">{displayName}{ageText}</span>
+                  {uStatus ? (
+                    <p className="text-slate-600 mt-1 text-sm">{uStatus}</p>
+                  ) : (
+                    <p className="text-slate-500 italic mt-1 text-sm">No status set</p>
+                  )}
+                  <button
+                    type="button"
+                    className="mt-2 w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-amber-950 text-sm font-semibold transition-colors shadow-md"
+                    onClick={() => setSelectedUser(user)}
+                  >
+                    View Profile
+                  </button>
+                </div>
               </Popup>
             </Marker>
           )
@@ -240,21 +249,22 @@ export default function MapView() {
       </MapContainer>
       <Link
         to="/profile"
-        className="absolute top-4 left-4 z-[1000] px-4 py-2 rounded-lg bg-slate-800/90 text-white hover:bg-slate-700 font-medium shadow-lg"
+        className="absolute top-4 left-4 z-[1000] flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50/95 dark:bg-stone-800/95 backdrop-blur-md text-amber-950 dark:text-amber-50 hover:bg-amber-100 dark:hover:bg-stone-700/95 font-medium shadow-xl border border-amber-200/60 dark:border-amber-800/50 transition-all"
       >
+        <span className="text-lg">←</span>
         Back to profile
       </Link>
 
       {selectedUser && (
         <div
-          className="absolute inset-0 z-[1100] flex items-center justify-center bg-black/50 p-4"
+          className="absolute inset-0 z-[1100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           role="dialog"
           aria-modal="true"
           aria-label="Profile"
           onClick={() => setSelectedUser(null)}
         >
           <div
-            className="bg-slate-800 rounded-xl shadow-xl max-w-sm w-full max-h-[90vh] overflow-y-auto text-white p-6"
+            className="bg-stone-900 rounded-2xl shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto text-amber-50 p-6 border border-amber-800/30"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-start mb-4">
@@ -262,7 +272,7 @@ export default function MapView() {
               <button
                 type="button"
                 onClick={() => setSelectedUser(null)}
-                className="text-slate-400 hover:text-white text-2xl leading-none"
+                className="text-amber-200 hover:text-amber-50 text-2xl leading-none"
                 aria-label="Close"
               >
                 &times;
@@ -276,7 +286,7 @@ export default function MapView() {
                   className="w-24 h-24 rounded-full object-cover mb-3"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-slate-700 flex items-center justify-center text-3xl font-medium text-slate-400 mb-3">
+                <div className="w-24 h-24 rounded-full bg-amber-800/60 flex items-center justify-center text-3xl font-medium text-amber-300 mb-3">
                   {(selectedUser.full_name?.trim() || '?').charAt(0).toUpperCase()}
                 </div>
               )}
@@ -286,47 +296,47 @@ export default function MapView() {
             </div>
             {selectedUser.status?.trim() && (
               <div className="mb-4">
-                <p className="text-slate-400 text-sm font-medium mb-1">What do they want to do?</p>
-                <p className="text-slate-200">{selectedUser.status.trim()}</p>
+                <p className="text-amber-300/90 text-sm font-medium mb-1">What do they want to do?</p>
+                <p className="text-amber-50">{selectedUser.status.trim()}</p>
               </div>
             )}
             <div className="space-y-3 text-sm text-left">
               <p>
-                <span className="text-slate-400">Age:</span>{' '}
+                <span className="text-amber-300/90">Age:</span>{' '}
                 {(selectedUser.age != null && selectedUser.age !== '') ? String(selectedUser.age) : '—'}
               </p>
               <p>
-                <span className="text-slate-400">Gender:</span>{' '}
+                <span className="text-amber-300/90">Gender:</span>{' '}
                 {selectedUser.gender ? genderLabel(selectedUser.gender) : '—'}
               </p>
               <p>
-                <span className="text-slate-400">Languages:</span>{' '}
+                <span className="text-amber-300/90">Languages:</span>{' '}
                 {Array.isArray(selectedUser.languages) && selectedUser.languages.length > 0
                   ? selectedUser.languages.map(languageLabel).join(', ')
                   : '—'}
               </p>
               <div>
-                <p className="text-slate-400 mb-1">Interests</p>
+                <p className="text-amber-300/90 mb-1">Interests</p>
                 {Array.isArray(selectedUser.interests) && selectedUser.interests.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {selectedUser.interests.map((id) => (
                       <span
                         key={id}
-                        className="px-2 py-1 rounded-full bg-slate-700 text-slate-200 text-xs"
+                        className="px-2 py-1 rounded-full bg-amber-700/60 text-amber-100 text-xs"
                       >
                         {interestLabel(id)}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-slate-500">—</p>
+                  <p className="text-amber-400/70">—</p>
                 )}
               </div>
             </div>
             <button
               type="button"
               onClick={() => setSelectedUser(null)}
-              className="mt-6 w-full py-2 rounded-lg bg-slate-700 hover:bg-slate-600 font-medium"
+              className="mt-6 w-full py-3 rounded-xl bg-amber-600/80 hover:bg-amber-500 font-medium transition-colors text-amber-950"
             >
               Close
             </button>

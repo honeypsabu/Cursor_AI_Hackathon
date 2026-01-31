@@ -22,7 +22,8 @@ const STATUS_KEYWORD_GROUPS = [
   ['dance', 'party'],
 ]
 
-// Map status keywords to related interest IDs (e.g. "hiking" in status ↔ "outdoor" interest)
+// Map status keywords to related interest IDs. Values can be string or string[] so
+// one activity (e.g. "painting class") matches multiple interests (e.g. "art", "painting").
 const STATUS_TO_INTEREST = {
   hike: 'outdoor',
   hiking: 'hiking',
@@ -45,10 +46,12 @@ const STATUS_TO_INTEREST = {
   gym: 'sports',
   workout: 'sports',
   exercise: 'sports',
-  art: 'art',
+  art: ['art', 'painting'],       // "art class" matches interest "art" or "painting"
   museum: 'art',
   gallery: 'art',
-  painting: 'painting',
+  painting: ['painting', 'art'],  // "painting class" matches interest "art" or "painting"
+  draw: ['painting', 'art'],
+  workshop: ['crafts', 'art'],
   craft: 'crafts',
   pottery: 'crafts',
   cooking: 'cooking',
@@ -96,14 +99,16 @@ function interestOverlap(interestsA, interestsB) {
   return overlap / Math.max(a.size, b.size)
 }
 
-// Status keywords (e.g. "hiking") can match related interests (e.g. "outdoor")
+// Status keywords (e.g. "painting class") match related interests (e.g. "art", "painting")
 function statusInterestOverlap(status, interests) {
   if (!status || typeof status !== 'string') return 0
   const interestsSet = new Set(Array.isArray(interests) ? interests : [])
   if (interestsSet.size === 0) return 0
   const lower = status.toLowerCase()
-  for (const [keyword, interestId] of Object.entries(STATUS_TO_INTEREST)) {
-    if (lower.includes(keyword) && interestsSet.has(interestId)) return 0.8
+  for (const [keyword, mapped] of Object.entries(STATUS_TO_INTEREST)) {
+    if (!lower.includes(keyword)) continue
+    const ids = Array.isArray(mapped) ? mapped : [mapped]
+    if (ids.some((id) => interestsSet.has(id))) return 0.8
   }
   return 0
 }
@@ -133,8 +138,10 @@ export function scoreMatch(myProfile, candidate) {
 // Derive group name from shared activity (e.g. walk/nature/hiking -> "Hiking Group")
 export function getGroupNameForMatch(profile, matches) {
   const status = (profile?.status || '').toLowerCase()
-  const keywords = ['hike', 'hiking', 'trail', 'walk', 'nature', 'stroll', 'wander']
-  if (keywords.some((k) => status.includes(k))) return 'Hiking Group'
+  const hiking = ['hike', 'hiking', 'trail', 'walk', 'nature', 'stroll', 'wander']
+  const art = ['painting', 'art', 'draw', 'museum', 'gallery', 'workshop', 'craft']
+  if (hiking.some((k) => status.includes(k))) return 'Hiking Group'
+  if (art.some((k) => status.includes(k))) return 'Art & Painting Group'
   if (status) return status.slice(0, 30) + (status.length > 30 ? '…' : '')
   return 'Meetup'
 }

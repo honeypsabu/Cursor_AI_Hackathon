@@ -165,7 +165,7 @@ export default function MapView() {
     load()
   }, [navigate])
 
-  useAutoMatch(profile)
+  useAutoMatch(profile, { runOnEveryMount: true })
 
   if (loading) {
     return (

@@ -2,13 +2,15 @@ import { useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { findBestMatches, getGroupNameForMatch } from '../lib/matching'
 
-const THROTTLE_MS = 5 * 60 * 1000 // 5 minutes (was 24h – lets you retry matching sooner)
+const THROTTLE_MS = 60 * 1000 // 1 minute (so opening Map can trigger matching soon after Profile)
 
-export function useAutoMatch(profile) {
+export function useAutoMatch(profile, options = {}) {
+  const { runOnEveryMount = false } = options // Map: run when you open it (throttled). Profile: run once per session.
   const hasRun = useRef(false)
 
   useEffect(() => {
-    if (!profile?.id || hasRun.current) return
+    if (!profile?.id) return
+    if (!runOnEveryMount && hasRun.current) return
 
     async function runAutoMatch() {
       try {
@@ -72,12 +74,13 @@ export function useAutoMatch(profile) {
         }
 
         localStorage.setItem(key, String(Date.now()))
+        window.dispatchEvent(new CustomEvent('refresh-invite-count'))
       } catch (err) {
         console.error('[AutoMatch] Error:', err)
       }
     }
 
-    hasRun.current = true
+    if (!runOnEveryMount) hasRun.current = true
     runAutoMatch()
-  }, [profile?.id, profile?.status, profile?.interests])
+  }, [profile?.id, profile?.status, profile?.interests, runOnEveryMount])
 }

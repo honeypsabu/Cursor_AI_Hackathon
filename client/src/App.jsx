@@ -10,6 +10,7 @@ import Groups from './pages/Groups'
 import GroupChat from './pages/GroupChat'
 import ChatsList from './pages/ChatsList'
 import Chat from './pages/Chat'
+import UserProfile from './pages/UserProfile'
 import ProtectedRoute from './components/ProtectedRoute'
 import ProtectedLayout from './components/ProtectedLayout'
 
@@ -28,6 +29,7 @@ function App() {
         <Route path="/groups/:groupId" element={<GroupChat />} />
         <Route path="/chats" element={<ChatsList />} />
         <Route path="/chats/:connectionId" element={<Chat />} />
+        <Route path="/user/:userId" element={<UserProfile />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

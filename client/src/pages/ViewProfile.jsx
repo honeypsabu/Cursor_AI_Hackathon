@@ -7,7 +7,6 @@ import { useAutoMatch } from '../hooks/useAutoMatch'
 
 export default function ViewProfile() {
   const [profile, setProfile] = useState(null)
-  const [myGroups, setMyGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [editingStatus, setEditingStatus] = useState(false)
@@ -36,8 +35,6 @@ export default function ViewProfile() {
         return
       }
       setProfile(data || { id: user.id, email: user.email, full_name: '', avatar_url: '', status: '', interests: [], age: null, gender: '', languages: [] })
-      const { data: groups } = await supabase.rpc('get_my_groups')
-      setMyGroups(groups || [])
       setLoading(false)
     }
     load()
@@ -121,9 +118,9 @@ export default function ViewProfile() {
 
   return (
     <div className="min-h-screen bg-white text-text flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-xl border border-slate-200">
+      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-xl border border-slate-200 ring-1 ring-primary/5">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-text">Your profile</h2>
+          <h2 className="text-2xl font-bold text-primary">Your profile</h2>
           <Link
             to="/profile/edit"
             className="text-sm text-primary hover:text-primary-hover font-medium"
@@ -142,7 +139,7 @@ export default function ViewProfile() {
               className="w-28 h-28 rounded-full object-cover mb-4"
             />
           ) : (
-            <div className="w-28 h-28 rounded-full bg-slate-100 flex items-center justify-center text-text-muted text-2xl font-medium mb-4">
+            <div className="w-28 h-28 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-medium mb-4">
               {profile?.full_name?.charAt(0)?.toUpperCase() || profile?.email?.charAt(0)?.toUpperCase() || '?'}
             </div>
           )}
@@ -154,17 +151,30 @@ export default function ViewProfile() {
           )}
         </div>
         {hasDetails && (
-          <div className="mb-6 flex flex-wrap gap-4 justify-center text-sm text-text-muted">
-            {profile?.age != null && <span>Age: {profile.age}</span>}
-            {genderLabel && <span>Gender: {genderLabel}</span>}
+          <div className="mb-6 flex flex-wrap justify-center gap-2">
+            {profile?.age != null && (
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm bg-primary/10 text-text border border-primary/30">
+                <span className="text-primary mr-1.5 font-medium">Age</span>
+                <span>{profile.age}</span>
+              </span>
+            )}
+            {genderLabel && (
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm bg-primary/10 text-text border border-primary/30">
+                <span className="text-primary mr-1.5 font-medium">Gender</span>
+                <span>{genderLabel}</span>
+              </span>
+            )}
             {languageLabels.length > 0 && (
-              <span>Languages: {languageLabels.join(', ')}</span>
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm bg-primary/10 text-text border border-primary/30">
+                <span className="text-primary mr-1.5 font-medium">Languages</span>
+                <span>{languageLabels.join(', ')}</span>
+              </span>
             )}
           </div>
         )}
         {!editingInterests && (
         <div className="mb-6">
-          <p className="text-sm font-medium text-text-muted mb-1">What do you wanna do?</p>
+          <p className="text-sm font-medium text-primary mb-1">What do you wanna do?</p>
           {editingStatus ? (
             <div className="space-y-2">
               <input
@@ -198,7 +208,7 @@ export default function ViewProfile() {
             </div>
           ) : profile?.status ? (
             <div className="flex items-center justify-between gap-2">
-              <p className="text-text text-sm bg-slate-50 rounded-lg px-4 py-3 border border-slate-200 flex-1">
+              <p className="text-text text-sm bg-primary/5 rounded-lg px-4 py-3 border border-primary/20 flex-1">
                 {profile.status}
               </p>
               <button
@@ -222,7 +232,7 @@ export default function ViewProfile() {
         )}
         {!editingStatus && (
         <div className="mb-6">
-          <p className="text-sm font-medium text-text-muted mb-2">Interests</p>
+          <p className="text-sm font-medium text-primary mb-2">Interests</p>
           {editingInterests ? (
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2">
@@ -272,7 +282,7 @@ export default function ViewProfile() {
               {interestLabels.map((label) => (
                 <span
                   key={label}
-                  className="px-3 py-1.5 rounded-full text-sm bg-slate-100 text-text border border-slate-200"
+                  className="px-3 py-1.5 rounded-full text-sm bg-primary/10 text-primary font-medium border border-primary/30"
                 >
                   {label}
                 </span>
@@ -296,23 +306,6 @@ export default function ViewProfile() {
           )}
         </div>
         )}
-        {myGroups.length > 0 && (
-          <div className="mb-6">
-            <p className="text-sm font-medium text-slate-300 mb-2">My groups</p>
-            <div className="space-y-2">
-              {myGroups.map((g) => (
-                <Link
-                  key={g.group_id}
-                  to={`/groups/${g.group_id}`}
-                  className="block p-3 rounded-lg bg-slate-700/50 border border-slate-600 hover:border-slate-500 transition"
-                >
-                  <p className="font-medium text-white">{g.group_name}</p>
-                  <p className="text-slate-400 text-sm">{g.group_activity || `${g.member_count} members`}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
         <div className="flex flex-wrap justify-center gap-3">
           <Link
             to="/chats"
@@ -325,12 +318,6 @@ export default function ViewProfile() {
             className="px-6 py-3 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium transition"
           >
             View my area on map
-          </Link>
-          <Link
-            to="/profile/edit"
-            className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium transition"
-          >
-            Edit profile
           </Link>
         </div>
       </div>

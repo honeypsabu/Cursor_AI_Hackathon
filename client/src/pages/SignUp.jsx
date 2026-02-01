@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 export default function SignUp() {
@@ -8,9 +8,6 @@ export default function SignUp() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-  const navigate = useNavigate()
-  const location = useLocation()
-  const from = location.state?.from?.pathname || '/profile'
 
   async function handleEmailSignUp(e) {
     e.preventDefault()
@@ -26,15 +23,6 @@ export default function SignUp() {
     setMessage('Check your email for the confirmation link, or log in if already confirmed.')
   }
 
-  async function handleGoogleSignUp() {
-    setError('')
-    const { error: err } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}${from}` },
-    })
-    if (err) setError(err.message)
-  }
-
   return (
     <div className="min-h-screen bg-background text-text flex items-center justify-center px-4">
       <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-xl border border-slate-200">
@@ -45,21 +33,6 @@ export default function SignUp() {
         {message && (
           <p className="mb-4 text-primary text-sm">{message}</p>
         )}
-        <button
-          type="button"
-          onClick={handleGoogleSignUp}
-          className="w-full py-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium mb-6 flex items-center justify-center gap-2 transition"
-        >
-          Sign up with Google
-        </button>
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-200" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-text-muted">or</span>
-          </div>
-        </div>
         <form onSubmit={handleEmailSignUp} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-text mb-1">

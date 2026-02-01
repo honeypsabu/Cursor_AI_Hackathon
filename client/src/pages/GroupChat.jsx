@@ -124,9 +124,14 @@ export default function GroupChat() {
       const row = Array.isArray(data) && data[0] ? data[0] : null
       if (row) setInviteStats({ invited: row.invited_count ?? 0, accepted: row.accepted_count ?? 0 })
     }
+    async function fetchMembers() {
+      const { data } = await supabase.from('group_members').select('user_id').eq('group_id', groupId)
+      setMembers(data || [])
+    }
     fetchMessages()
     fetchInviteStats()
-    const interval = setInterval(() => { fetchMessages(); fetchInviteStats() }, 3000)
+    fetchMembers()
+    const interval = setInterval(() => { fetchMessages(); fetchInviteStats(); fetchMembers() }, 3000)
     return () => clearInterval(interval)
   }, [groupId])
 
@@ -339,7 +344,7 @@ export default function GroupChat() {
           <h1 className="font-semibold text-text truncate">{group.name}</h1>
           <p className="text-text-muted text-sm truncate flex items-center gap-2 flex-wrap">
             {group.activity_summary && <span>{group.activity_summary}</span>}
-            {inviteStats.invited > 0 && (
+            {(members.length > 0 || inviteStats.invited > 0) && (
               <>
                 {group.activity_summary && <span className="text-slate-300">·</span>}
                 <button
@@ -347,11 +352,10 @@ export default function GroupChat() {
                   onClick={openParticipants}
                   className="px-2 py-0.5 rounded-md bg-slate-100 text-text-muted hover:bg-slate-200 transition cursor-pointer"
                 >
-                  {inviteStats.accepted}/{inviteStats.invited} joined
+                  {members.length}/{inviteStats.invited || members.length} joined
                 </button>
               </>
             )}
-            {!group.activity_summary && inviteStats.invited === 0 && `${members.length} members`}
           </p>
         </div>
       </div>
@@ -609,7 +613,7 @@ export default function GroupChat() {
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setShowScheduler(!showScheduler) }}
-            className="px-2 py-1 rounded-lg text-text-muted hover:text-primary hover:bg-primary/5 text-xs font-medium transition"
+            className={`px-2 py-1 rounded-lg text-xs font-medium transition ${showScheduler ? 'bg-sky-200/60 text-sky-800' : 'bg-sky-100/80 text-text-muted hover:text-sky-700 hover:bg-sky-200/50'}`}
           >
             Scheduler
           </button>

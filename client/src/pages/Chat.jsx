@@ -13,7 +13,7 @@ export default function Chat() {
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [editingMeetup, setEditingMeetup] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [meetupDate, setMeetupDate] = useState('')
   const [meetupTime, setMeetupTime] = useState('')
   const [meetupPlace, setMeetupPlace] = useState('')
@@ -129,6 +129,7 @@ export default function Chat() {
 
   async function saveMeetupDetails() {
     if (!connection) return
+    setSaving(true)
     setError('')
     const { error: err } = await supabase
       .from('connections')
@@ -138,6 +139,7 @@ export default function Chat() {
         meetup_place: meetupPlace.trim() || null,
       })
       .eq('id', connectionId)
+    setSaving(false)
     if (err) {
       setError(err.message)
       return
@@ -148,14 +150,6 @@ export default function Chat() {
       meetup_time: meetupTime.trim() || null,
       meetup_place: meetupPlace.trim() || null,
     }))
-    setEditingMeetup(false)
-  }
-
-  function cancelMeetupEdit() {
-    setMeetupDate(connection?.meetup_date || '')
-    setMeetupTime(connection?.meetup_time || '')
-    setMeetupPlace(connection?.meetup_place || '')
-    setEditingMeetup(false)
   }
 
   // Check if 24 hours have passed and meetup details are empty
@@ -197,74 +191,45 @@ export default function Chat() {
         <h2 className="font-semibold text-text flex-1">{displayName}</h2>
       </header>
 
-      {/* Meetup details */}
-      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
-        {editingMeetup ? (
-          <div className="space-y-2">
-            <p className="text-xs text-text-muted mb-2">Plan your meetup:</p>
-            <input
-              type="text"
-              value={meetupDate}
-              onChange={(e) => setMeetupDate(e.target.value)}
-              placeholder="Date (e.g., Saturday, Dec 15)"
-              className="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm text-text placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <input
-              type="text"
-              value={meetupTime}
-              onChange={(e) => setMeetupTime(e.target.value)}
-              placeholder="Time (e.g., 3:00 PM)"
-              className="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm text-text placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <input
-              type="text"
-              value={meetupPlace}
-              onChange={(e) => setMeetupPlace(e.target.value)}
-              placeholder="Place (e.g., Central Park)"
-              className="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm text-text placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={saveMeetupDetails}
-                className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white text-sm font-medium"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={cancelMeetupEdit}
-                className="px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-text text-sm font-medium"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1 grid grid-cols-3 gap-2 text-sm">
-              <div>
-                <p className="text-xs text-text-muted mb-1">Date</p>
-                <p className="text-text">{connection?.meetup_date || '—'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-text-muted mb-1">Time</p>
-                <p className="text-text">{connection?.meetup_time || '—'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-text-muted mb-1">Place</p>
-                <p className="text-text">{connection?.meetup_place || '—'}</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setEditingMeetup(true)}
-              className="text-sm text-primary hover:text-primary-hover font-medium"
+      <div className="px-4 py-3 border-b border-slate-200 bg-slate-50/80">
+        <p className="text-xs font-medium text-text-muted mb-2">Meetup Details</p>
+        <div className="flex flex-wrap gap-2 items-center">
+          <input
+            type="text"
+            value={meetupPlace}
+            onChange={(e) => setMeetupPlace(e.target.value)}
+            onBlur={saveMeetupDetails}
+            placeholder="Location (e.g. Central Park, New York)"
+            className="flex-1 min-w-[120px] px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-text text-sm placeholder-text-light focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          {meetupPlace.trim() && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(meetupPlace.trim())}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white text-sm font-medium transition shrink-0"
+              title="Open in Google Maps"
             >
-              Edit
-            </button>
-          </div>
-        )}
+              <span aria-hidden>📍</span>
+              <span>Open in Maps</span>
+            </a>
+          )}
+          <input
+            type="date"
+            value={meetupDate}
+            onChange={(e) => setMeetupDate(e.target.value)}
+            onBlur={saveMeetupDetails}
+            className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          <input
+            type="time"
+            value={meetupTime}
+            onChange={(e) => setMeetupTime(e.target.value)}
+            onBlur={saveMeetupDetails}
+            className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          {saving && <span className="text-xs text-text-muted self-center">Saving...</span>}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

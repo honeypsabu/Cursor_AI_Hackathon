@@ -24,32 +24,45 @@ export default function Groups() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-text flex items-center justify-center">
-        <p className="text-text-muted">Loading groups...</p>
+        <p className="text-text-muted">Loading...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white text-text px-4 pt-6 pb-10">
-      <div className="w-full max-w-md mx-auto rounded-xl bg-white p-8 shadow-xl border border-slate-200">
-        <h1 className="text-2xl font-bold text-text mb-6">Groups</h1>
-        {groups.length === 0 ? (
-          <p className="text-text-muted">No groups yet. Accept an invite from your notifications to join a group.</p>
-        ) : (
-          <ul className="space-y-3">
-            {groups.map((g, i) => (
-              <li key={g?.group_id ?? i}>
+    <div className="min-h-screen bg-white text-text">
+      <div className="max-w-md mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-text">Groups</h2>
+          <Link to="/profile" className="text-sm text-primary hover:text-primary-hover font-medium">
+            Back to profile
+          </Link>
+        </div>
+        <div>
+          <h3 className="text-sm font-medium text-text-muted mb-3">Your groups</h3>
+          {groups.length === 0 ? (
+            <p className="text-text-muted text-sm py-4">No groups yet. Accept an invite from your notifications to join a group.</p>
+          ) : (
+            <div className="space-y-2">
+              {groups.map((g, i) => (
                 <Link
+                  key={g?.group_id ?? i}
                   to={`/groups/${g?.group_id ?? ''}`}
-                  className="block p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-primary/30 hover:bg-slate-50/80 transition text-text"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-white border border-slate-200 hover:border-primary/50 hover:bg-slate-50 transition"
                 >
-                  <p className="font-medium text-text">{g?.group_name ?? 'Unnamed group'}</p>
-                  <p className="text-text-muted text-sm mt-1">{g?.group_activity ?? (g?.member_count != null ? `${g.member_count} members` : '')}</p>
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl shrink-0">
+                    👥
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-text truncate">{g?.group_name ?? 'Unnamed group'}</p>
+                    <p className="text-text-muted text-sm truncate">{g?.group_activity ?? (g?.member_count != null ? `${g.member_count} members` : '')}</p>
+                  </div>
+                  <span className="text-slate-400 shrink-0">→</span>
                 </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

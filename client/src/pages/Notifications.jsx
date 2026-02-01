@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { findBestMatches, getGroupNameForMatch } from '../lib/matching'
+import { findBestMatches, getGroupNameForMatch, getActivityBucket } from '../lib/matching'
 
 export default function Notifications() {
   const [invites, setInvites] = useState([])
@@ -19,7 +19,16 @@ export default function Notifications() {
     }
     setCurrentUserId(user.id)
     const { data } = await supabase.rpc('get_my_invites')
-    setInvites(Array.isArray(data) ? data : [])
+    const list = Array.isArray(data) ? data : []
+    // One invite per activity (dedupe in case of legacy duplicates)
+    const seenActivity = new Set()
+    const deduped = list.filter((inv) => {
+      const key = (inv.group_activity || '').trim() || inv.group_id
+      if (seenActivity.has(key)) return false
+      seenActivity.add(key)
+      return true
+    })
+    setInvites(deduped)
   }
 
   useEffect(() => {
@@ -41,13 +50,20 @@ export default function Notifications() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      
-      // Delete all groups you initiated (cascade deletes invites and members)
-      await supabase.from('match_groups').delete().eq('initiator_id', user.id)
-      
-      // Delete any remaining invites sent to you
-      await supabase.from('match_invites').delete().eq('invited_user_id', user.id)
-      
+
+      const { error } = await supabase.rpc('clear_my_groups')
+      if (error) {
+        const rpcMissing = error.code === 'PGRST202' || (error.message && error.message.includes('clear_my_groups'))
+        if (rpcMissing) {
+          await supabase.from('match_groups').delete().eq('initiator_id', user.id)
+          await supabase.from('match_invites').delete().eq('invited_user_id', user.id)
+          await supabase.from('group_members').delete().eq('user_id', user.id)
+        } else {
+          setRunMatchStatus(`Error: ${error.message}`)
+          return
+        }
+      }
+
       setRunMatchStatus('Cleared. Ready for fresh matching.')
       setInvites([])
       refreshInviteCount()
@@ -71,6 +87,18 @@ export default function Notifications() {
       
       setRunMatchStatus('Running matching...')
       const { data: profile } = await supabase.from('profiles').select('status, interests').eq('id', user.id).single()
+      const myStatus = profile?.status?.trim() || ''
+      const myBucket = getActivityBucket(myStatus)
+      const { data: currentInvites } = await supabase.rpc('get_my_invites')
+      const pending = Array.isArray(currentInvites) ? currentInvites.filter((i) => i.status === 'pending') : []
+      const alreadyInvitedForSameActivity = pending.some((i) => {
+        const g = (i.group_activity || '').trim()
+        return g === myStatus || g === myBucket
+      })
+      if (alreadyInvitedForSameActivity) {
+        setRunMatchStatus('You already have a pending invite for this activity.')
+        return
+      }
       const { data: matchProfiles, error: rpcErr } = await supabase.rpc('get_profiles_for_matching')
       const candidates = Array.isArray(matchProfiles) ? matchProfiles : []
       if (rpcErr) {
@@ -80,7 +108,7 @@ export default function Notifications() {
       const myProfile = {
         id: user.id,
         ...profile,
-        status: profile?.status?.trim() || '',
+        status: myStatus,
         interests: Array.isArray(profile?.interests) ? profile.interests : [],
       }
       const best = findBestMatches(myProfile, candidates, 4)
@@ -182,7 +210,7 @@ export default function Notifications() {
                 onClick={clearAllGroups}
                 className="px-4 py-2 rounded-lg bg-slate-100 border border-slate-200 hover:bg-slate-200 text-text text-sm font-medium"
               >
-                Clear all groups
+                Clear all notifications
               </button>
             </div>
             {runMatchStatus && (
@@ -197,13 +225,12 @@ export default function Notifications() {
                 onClick={clearAllGroups}
                 className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 hover:bg-slate-200 text-text-muted text-xs font-medium"
               >
-                Clear all groups
+                Clear all notifications
               </button>
             </div>
           <ul className="space-y-4">
             {invites.map((inv) => {
               const isInitiator = inv.initiator_id === currentUserId
-              const initiatorName = inv.initiator_name?.trim() || 'Someone'
               const groupName = inv.group_name || 'Meetup'
               const activity = inv.group_activity
               return (
@@ -214,17 +241,13 @@ export default function Notifications() {
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    {inv.initiator_avatar ? (
-                      <img src={inv.initiator_avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-text-muted font-medium shrink-0">
-                        {initiatorName.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium shrink-0" aria-hidden>
+                      <span className="text-lg">✨</span>
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-text font-medium">{groupName}</p>
                       <p className="text-text-muted text-sm mt-0.5">
-                        {isInitiator ? 'You found a match' : `${initiatorName} invited you`}{activity ? ` — ${activity}` : ''}
+                        {isInitiator ? 'You found a match' : 'You have a new match'}{activity ? ` — ${activity}` : ''}
                       </p>
                       {inv.status === 'pending' && (
                         <div className="flex gap-2 mt-3">

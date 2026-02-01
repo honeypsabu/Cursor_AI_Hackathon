@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { findBestMatches, getGroupNameForMatch } from '../lib/matching'
+import { findBestMatches, getGroupNameForMatch, getActivityBucket } from '../lib/matching'
 
 const THROTTLE_MS = 60 * 1000 // 1 minute (so opening Map can trigger matching soon after Profile)
 
@@ -20,6 +20,17 @@ export function useAutoMatch(profile, options = {}) {
         const key = `lastAutoMatch_${user.id}`
         const last = localStorage.getItem(key)
         if (last && Date.now() - parseInt(last, 10) < THROTTLE_MS) return
+
+        // Skip if we already have a pending invite for the same activity (one invite per connection)
+        const myStatus = profile?.status?.trim() || ''
+        const myBucket = getActivityBucket(myStatus)
+        const { data: myInvites } = await supabase.rpc('get_my_invites')
+        const pending = Array.isArray(myInvites) ? myInvites.filter((i) => i.status === 'pending') : []
+        const alreadyInvitedForSameActivity = pending.some((i) => {
+          const g = (i.group_activity || '').trim()
+          return g === myStatus || g === myBucket
+        })
+        if (alreadyInvitedForSameActivity) return
 
         const { data: matchProfiles, error: rpcErr } = await supabase.rpc('get_profiles_for_matching')
         const candidates = Array.isArray(matchProfiles) ? matchProfiles : []

@@ -124,6 +124,11 @@ BEGIN
       ON CONFLICT (group_id, invited_user_id) DO NOTHING;
     END LOOP;
 
+    -- Add initiator to group_members so they see the group and can open chat
+    INSERT INTO public.group_members (group_id, user_id)
+    VALUES (grp_id, initiator_id)
+    ON CONFLICT (group_id, user_id) DO NOTHING;
+
     RAISE NOTICE 'Created group "%" (activity: %) with % invite(s).', bucket_label, activity_bucket, array_length(member_ids, 1);
   END LOOP;
 

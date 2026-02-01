@@ -84,6 +84,9 @@ export function useAutoMatch(profile, options = {}) {
           return
         }
 
+        // Add initiator to group_members so they see the group and can open chat
+        await supabase.from('group_members').insert({ group_id: group.id, user_id: user.id })
+
         localStorage.setItem(key, String(Date.now()))
         window.dispatchEvent(new CustomEvent('refresh-invite-count'))
       } catch (err) {

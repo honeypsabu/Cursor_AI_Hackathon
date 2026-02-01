@@ -134,6 +134,7 @@ export default function Notifications() {
         setRunMatchStatus(`Error sending invites: ${inviteErr.message}`)
         return
       }
+      await supabase.from('group_members').insert({ group_id: group.id, user_id: user.id })
       setRunMatchStatus(`Sent invites to you and ${best.length} other(s). Check above.`)
       refreshInviteCount()
       const { data: invs } = await supabase.rpc('get_my_invites')
@@ -148,14 +149,23 @@ export default function Notifications() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      await supabase.from('match_invites').update({
+      const { error: updateErr } = await supabase.from('match_invites').update({
         status: 'accepted',
         read_at: new Date().toISOString(),
       }).eq('id', invite.id)
-      await supabase.from('group_members').insert({
+      if (updateErr) {
+        setRunMatchStatus(`Error: ${updateErr.message}`)
+        return
+      }
+      const { error: memberErr } = await supabase.from('group_members').insert({
         group_id: invite.group_id,
         user_id: user.id,
       })
+      // 23505 = duplicate key (already a member) — treat as success
+      if (memberErr && memberErr.code !== '23505') {
+        setRunMatchStatus(`Could not join group: ${memberErr.message}`)
+        return
+      }
       setInvites((prev) => prev.map((i) => (i.id === invite.id ? { ...i, status: 'accepted' } : i)))
       refreshInviteCount()
     } finally {

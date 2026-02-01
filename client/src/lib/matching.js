@@ -1,4 +1,5 @@
 // Similar activities grouped together – "walk in nature" and "hiking" both match
+// Bucket ids must match manual_match_hiking.sql so we can dedupe "same activity" invites
 const STATUS_KEYWORD_GROUPS = [
   ['walk', 'stroll', 'wander', 'hike', 'hiking', 'trail', 'nature', 'outdoor', 'outside', 'fresh air', 'woods', 'forest', 'park', 'nature walk'],
   ['run', 'jog'],
@@ -21,6 +22,20 @@ const STATUS_KEYWORD_GROUPS = [
   ['dog', 'pet', 'puppy'],
   ['dance', 'party'],
 ]
+
+const ACTIVITY_BUCKET_IDS = [
+  'outdoor_walk', 'running', 'coffee', 'drinks', 'food', 'cooking', 'reading',
+  'movies', 'music', 'gaming', 'cycling', 'swim', 'fitness', 'travel', 'art',
+  'chat', 'study', 'work', 'pet', 'dance',
+]
+
+/** Returns activity bucket id for a status (matches manual_match_hiking.sql). Used to dedupe invites by activity. */
+export function getActivityBucket(status) {
+  if (!status || typeof status !== 'string') return 'other'
+  const lower = status.toLowerCase()
+  const i = STATUS_KEYWORD_GROUPS.findIndex((keywords) => keywords.some((k) => lower.includes(k)))
+  return i >= 0 ? ACTIVITY_BUCKET_IDS[i] : 'other'
+}
 
 // Map status keywords to related interest IDs. Values can be string or string[] so
 // one activity (e.g. "painting class") matches multiple interests (e.g. "art", "painting").

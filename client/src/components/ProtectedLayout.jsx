@@ -61,6 +61,12 @@ export default function ProtectedLayout() {
             Groups
           </Link>
           <Link
+            to="/chats"
+            className="px-3 py-2 rounded-lg text-text-muted hover:text-text hover:bg-slate-50 transition-colors text-sm font-medium"
+          >
+            Chats
+          </Link>
+          <Link
             to="/profile"
             className="px-3 py-2 rounded-lg text-text-muted hover:text-text hover:bg-slate-50 transition-colors text-sm font-medium"
           >

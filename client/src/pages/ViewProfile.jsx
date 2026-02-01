@@ -308,12 +308,6 @@ export default function ViewProfile() {
         )}
         <div className="flex flex-wrap justify-center gap-3">
           <Link
-            to="/chats"
-            className="px-6 py-3 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium transition"
-          >
-            Chats
-          </Link>
-          <Link
             to="/profile/map"
             className="px-6 py-3 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium transition"
           >

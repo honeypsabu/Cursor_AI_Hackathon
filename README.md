@@ -1,6 +1,8 @@
-# Hackathon Web App
+# Glimmer Social App
 
 Web app with sign up (Google or email), login, and user profile. Built with React + Vite + Tailwind, Node.js + Express, and Supabase (auth + PostgreSQL).
+<img width="1761" height="1725" alt="image" src="https://github.com/user-attachments/assets/ae7c3dff-7ce4-490c-8cb5-b34180bd3918" />
+
 
 ## Prerequisites
 

@@ -2,6 +2,8 @@
 
 > Connection is better in person. Find nearby people who share your wavelength—map, chat, plan meetups, and break the ice with profile-based prompts.
 
+<img width="1761" height="1725" alt="Glimmer app" src="https://github.com/user-attachments/assets/ae7c3dff-7ce4-490c-8cb5-b34180bd3918" />
+
 Built for the [Cursor 2-Day AI Hackathon](https://github.com/raminos/cursor-ai-hackathon-template) in Hamburg.
 
 ## Tech Stack

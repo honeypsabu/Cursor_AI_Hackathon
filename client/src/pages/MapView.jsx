@@ -116,6 +116,7 @@ export default function MapView() {
   const [profile, setProfile] = useState(null)
   const [currentUserId, setCurrentUserId] = useState(null)
   const [otherUsers, setOtherUsers] = useState([])
+  const [matchedUserIds, setMatchedUserIds] = useState(new Set())
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState(null)
   const [connectionStatus, setConnectionStatus] = useState(null) // 'connected' | 'pending_sent' | 'pending_received' | null
@@ -188,6 +189,14 @@ export default function MapView() {
       setProfile(myProfile || {})
       const { data: mapProfiles } = await supabase.rpc('get_profiles_for_map')
       setOtherUsers(Array.isArray(mapProfiles) ? mapProfiles : [])
+      const { data: myGroups } = await supabase.from('group_members').select('group_id').eq('user_id', user.id)
+      const groupIds = (myGroups || []).map((g) => g.group_id)
+      let ids = new Set()
+      if (groupIds.length > 0) {
+        const { data: members } = await supabase.from('group_members').select('user_id').in('group_id', groupIds).neq('user_id', user.id)
+        ids = new Set((members || []).map((m) => m.user_id))
+      }
+      setMatchedUserIds(ids)
       setLoading(false)
     }
     load()
@@ -242,13 +251,18 @@ export default function MapView() {
     return LANGUAGE_OPTIONS.find((o) => o.id === id)?.label ?? id
   }
 
-  function makeEmojiIcon(emojiChar, isYou = false) {
+  function makeEmojiIcon(emojiChar, isYou = false, isMatched = false) {
     const size = isYou ? 40 : 36
-    const anchor = size / 2
+    const ringSize = isMatched ? size + 12 : size
+    const anchor = ringSize / 2
+    const inner = `<div class="map-marker ${isYou ? 'map-marker-you' : ''}" style="width:${size}px;height:${size}px">${emojiChar}</div>`
+    const html = isMatched
+      ? `<div style="display:flex;align-items:center;justify-content:center;width:${ringSize}px;height:${ringSize}px;border-radius:50%;border:3px solid #7DD3FC;background:rgba(125,211,252,0.25);box-shadow:0 2px 6px rgba(125,211,252,0.35)">${inner}</div>`
+      : inner
     return L.divIcon({
-      html: `<div class="map-marker ${isYou ? 'map-marker-you' : ''}">${emojiChar}</div>`,
+      html,
       className: 'emoji-marker',
-      iconSize: [size, size],
+      iconSize: [ringSize, ringSize],
       iconAnchor: [anchor, anchor],
     })
   }
@@ -297,11 +311,12 @@ export default function MapView() {
           const uEmoji = getEmojiForUser(uStatus, user.interests)
           const displayName = user.full_name?.trim() || 'Someone'
           const ageText = user.age != null && user.age !== '' ? `, ${user.age}` : ''
+          const isMatched = matchedUserIds.has(user.id)
           return (
             <Marker
               key={user.id}
               position={[lat, lng]}
-              icon={makeEmojiIcon(uEmoji)}
+              icon={makeEmojiIcon(uEmoji, false, isMatched)}
             >
               <Tooltip direction="top" offset={[0, -16]} opacity={1} permanent={false}>
                 <span className="font-medium text-slate-800">{displayName}{ageText}</span>

@@ -20,15 +20,20 @@ export default function Notifications() {
     setCurrentUserId(user.id)
     const { data } = await supabase.rpc('get_my_invites')
     const list = Array.isArray(data) ? data : []
-    // One invite per activity (dedupe in case of legacy duplicates)
-    const seenActivity = new Set()
-    const deduped = list.filter((inv) => {
+    // One invite per activity. Prefer "You have a new match" (from others) over "You found a match" (initiator)
+    // when both exist for same activity; show initiator invite when it's the only one
+    const byActivity = new Map()
+    for (const inv of list) {
       const key = (inv.group_activity || '').trim() || inv.group_id
-      if (seenActivity.has(key)) return false
-      seenActivity.add(key)
-      return true
-    })
-    setInvites(deduped)
+      const fromOther = inv.initiator_id !== user.id
+      const existing = byActivity.get(key)
+      if (!existing) {
+        byActivity.set(key, inv)
+      } else if (fromOther && existing.initiator_id === user.id) {
+        byActivity.set(key, inv)
+      }
+    }
+    setInvites([...byActivity.values()])
   }
 
   useEffect(() => {
@@ -138,7 +143,16 @@ export default function Notifications() {
       setRunMatchStatus(`Sent invites to you and ${best.length} other(s). Check above.`)
       refreshInviteCount()
       const { data: invs } = await supabase.rpc('get_my_invites')
-      setInvites(invs || [])
+      const list = Array.isArray(invs) ? invs : []
+      const byActivity = new Map()
+      for (const inv of list) {
+        const key = (inv.group_activity || '').trim() || inv.group_id
+        const fromOther = inv.initiator_id !== user.id
+        const existing = byActivity.get(key)
+        if (!existing) byActivity.set(key, inv)
+        else if (fromOther && existing.initiator_id === user.id) byActivity.set(key, inv)
+      }
+      setInvites([...byActivity.values()])
     } catch (err) {
       setRunMatchStatus(`Error: ${err.message}`)
     }

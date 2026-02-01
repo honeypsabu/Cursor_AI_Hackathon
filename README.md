@@ -1,127 +1,93 @@
-# Glimmer Social App
+# Glimmer
 
-Web app with sign up (Google or email), login, and user profile. Built with React + Vite + Tailwind, Node.js + Express, and Supabase (auth + PostgreSQL).
-<img width="1761" height="1725" alt="image" src="https://github.com/user-attachments/assets/ae7c3dff-7ce4-490c-8cb5-b34180bd3918" />
+> Connection is better in person. Find nearby people who share your wavelength—map, chat, plan meetups, and break the ice with profile-based prompts.
 
+<img width="1761" height="1725" alt="Glimmer app" src="https://github.com/user-attachments/assets/ae7c3dff-7ce4-490c-8cb5-b34180bd3918" />
 
-## Prerequisites
+Built for the [Cursor 2-Day AI Hackathon](https://github.com/raminos/cursor-ai-hackathon-template) in Hamburg.
 
-- **Node.js 18 or 20** (required for the frontend; Node 14–17 will fail with `base64url` or `??=` errors)
+## Tech Stack
+
+- **Frontend**: React, Vite, Tailwind CSS
+- **Backend**: Node.js, Express
+- **Database**: Supabase (PostgreSQL, Auth, Storage, Realtime)
+- **Hosting**: Vercel (client), Render (server optional)
+
+## How to Run
+
+### Prerequisites
+
+- **Node.js 18 or 20** (LTS from [nodejs.org](https://nodejs.org) or `nvm use` with `.nvmrc`)
 - A [Supabase](https://supabase.com) project (free tier)
 
-**Upgrading Node:** Install from [nodejs.org](https://nodejs.org) (LTS) or use [nvm](https://github.com/nvm-sh/nvm): `nvm install 20 && nvm use 20`. This repo has an `.nvmrc`; from the project root run `nvm use` if you use nvm.
-
-## Supabase setup (do once in browser)
+### Supabase setup (once)
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. **Authentication > Providers**: enable **Email** and **Google**.
-   - For Google: create OAuth 2.0 credentials in [Google Cloud Console](https://console.cloud.google.com/apis/credentials), add authorized redirect URI from Supabase dashboard, then paste Client ID and Secret in Supabase.
-3. **Authentication > URL Configuration**: set Site URL to `http://localhost:5173` (dev) and add `http://localhost:5173/**` to Redirect URLs.
-4. **SQL Editor**: run the migration to create `profiles` and RLS:
-   - Copy the contents of `supabase/migrations/001_profiles.sql` and run it in the SQL Editor.
-5. In **Project Settings > API**: copy **Project URL** and **anon public** key for the client; copy **service_role** key for the server (keep it secret).
+2. **Authentication > Providers**: enable **Email**.
+3. **Authentication > URL Configuration**: Site URL `http://localhost:5173`, add `http://localhost:5173/**` to Redirect URLs.
+4. **SQL Editor**: run migrations in order from `supabase/migrations/` (e.g. `001_profiles.sql` through `009_connections_chat.sql`).
+5. **Project Settings > API**: copy **Project URL** and **anon public** key (client); **service_role** key for server (keep secret).
 
-## Local development
-
-### 1. Environment
+### Local development
 
 ```bash
-# Client
+# Clone the repo
+git clone https://github.com/your-team/glimmer.git
+cd glimmer
+
+# Install dependencies
+npm run install:all
+
+# Environment
 cp client/.env.example client/.env
-# Edit client/.env: set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
-
-# Server
 cp server/.env.example server/.env
-# Edit server/.env: set SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, PORT, CLIENT_URL
+# Edit client/.env: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
+# Edit server/.env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, CLIENT_URL, PORT
+
+# Run (frontend + backend)
+npm run dev
 ```
 
-### 2. Install and run
+- **Frontend**: [http://localhost:5173](http://localhost:5173)
+- **Backend**: [http://localhost:4000](http://localhost:4000)
 
-**Option A – one command (from project root, Node 18+):**
+**Alternative – two terminals:**
 
 ```bash
-npm run install:all   # once: install root + server + client deps
-npm run dev           # starts backend and frontend together
+npm run dev:server   # Terminal 1
+npm run dev:client   # Terminal 2
 ```
 
-**Option B – two terminals (from project root):**
+## Details
 
-```bash
-# Terminal 1 – backend
-npm run dev:server
+- **Map**: See yourself and others by location; emojis from “What do you want to do?” (status) or interests.
+- **Connections & chat**: Send connection requests from map or profile; when accepted, chat with ice-breaker suggestions from the other person’s profile.
+- **Meetup planning**: In each chat, set date, time, and place; after 24 hours without details, a prompt nudges you to plan.
+- **Auth**: Email sign up / log in only (no Google).
 
-# Terminal 2 – frontend
-npm run dev:client
-```
-
-**Option C – two terminals (cd into folders):**
-
-```bash
-# Terminal 1 – backend
-cd server && npm run dev
-
-# Terminal 2 – frontend
-cd client && npm run dev
-```
-
-- Frontend: [http://localhost:5173](http://localhost:5173)
-- Backend: [http://localhost:4000](http://localhost:4000)
-
-## Project structure
+### Project structure
 
 ```
 ├── client/          # React + Vite + Tailwind
 │   ├── src/
-│   │   ├── components/   # ProtectedRoute, etc.
-│   │   ├── pages/       # Landing, Login, SignUp, Profile
-│   │   ├── lib/         # supabase.js
-│   │   └── App.jsx
+│   │   ├── components/   # ProtectedRoute, ErrorBoundary, etc.
+│   │   ├── pages/        # Landing, Login, SignUp, ViewProfile, EditProfile, MapView, ChatsList, Chat
+│   │   ├── constants/    # interests, profile options
+│   │   ├── utils/        # iceBreakers
+│   │   └── lib/          # supabase.js
 │   └── .env
-├── server/          # Express API
-│   ├── src/
-│   │   ├── routes/      # profile.js
-│   │   ├── middleware/ # auth.js (JWT)
-│   │   ├── controllers/
-│   │   └── index.js
-│   └── .env
+├── server/          # Express API (optional profile endpoints)
 ├── supabase/
-│   └── migrations/     # 001_profiles.sql
+│   └── migrations/      # profiles, storage, connections, chat, RLS
 └── README.md
 ```
 
-## API (optional)
+### Deployment
 
-The app uses the Supabase client in the frontend for auth and profile. The Express server provides optional profile endpoints:
+- **Frontend (Vercel)**: Root `client`, build `npm run build`, env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
+- **Backend (Render)**: Root `server`, env: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CLIENT_URL`, `PORT`.
+- **Supabase**: Set production Site URL and Redirect URLs in Authentication.
 
-- `GET /api/profile` – returns the authenticated user’s profile (requires `Authorization: Bearer <access_token>`).
-- `PATCH /api/profile` – update profile (body: `full_name`, `avatar_url`).
+## About
 
-Get the access token from the frontend: `const { data: { session } } = await supabase.auth.getSession(); session?.access_token`.
-
-## Deployment
-
-### Frontend (Vercel)
-
-1. Connect the repo to Vercel.
-2. Set root directory to `client`.
-3. Build command: `npm run build`; output: `dist`.
-4. Add env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
-
-### Backend (Render)
-
-1. New Web Service, connect repo.
-2. Root directory: `server`.
-3. Build: `npm install`; start: `npm start`.
-4. Add env: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CLIENT_URL` (your Vercel URL), `PORT` (optional).
-
-### Supabase after deploy
-
-In **Authentication > URL Configuration**, set:
-
-- Site URL: your production frontend URL (e.g. `https://your-app.vercel.app`).
-- Redirect URLs: add `https://your-app.vercel.app/**`.
-
-## Security
-
-- Never expose `SUPABASE_SERVICE_ROLE_KEY` in the frontend; use it only in the server.
-- RLS is enabled on `profiles`: users can only read/update their own row.
+Glimmer was built using the [Cursor AI Hackathon template](https://github.com/raminos/cursor-ai-hackathon-template).

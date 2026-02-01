@@ -8,7 +8,7 @@ import { useAutoMatch } from '../hooks/useAutoMatch'
 import { GENDER_OPTIONS, LANGUAGE_OPTIONS } from '../constants/profile'
 import 'leaflet/dist/leaflet.css'
 
-// Map keywords in "What do you want to do?" status to an emoji
+// Priority 1: "What do they want to do?" (status) — e.g. "I wanna go for a walk", "hiking", "learning german"
 const STATUS_EMOJI_KEYWORDS = [
   { keywords: ['walk', 'stroll', 'wander'], emoji: '🚶' },
   { keywords: ['run', 'jog'], emoji: '🏃' },
@@ -16,7 +16,7 @@ const STATUS_EMOJI_KEYWORDS = [
   { keywords: ['drink', 'bar', 'beer', 'wine'], emoji: '🍻' },
   { keywords: ['eat', 'food', 'lunch', 'dinner', 'brunch'], emoji: '🍽️' },
   { keywords: ['cook', 'baking', 'bake'], emoji: '🍳' },
-  { keywords: ['read', 'book'], emoji: '📚' },
+  { keywords: ['read', 'book', 'library'], emoji: '📚' },
   { keywords: ['movie', 'film', 'cinema'], emoji: '🎬' },
   { keywords: ['music', 'concert', 'gig'], emoji: '🎵' },
   { keywords: ['badminton', 'tennis', 'squash', 'racket', 'table tennis'], emoji: '🏸' },
@@ -28,19 +28,47 @@ const STATUS_EMOJI_KEYWORDS = [
   { keywords: ['travel', 'trip', 'explore'], emoji: '✈️' },
   { keywords: ['art', 'museum', 'gallery', 'painting', 'workshop', 'craft', 'pottery', 'draw'], emoji: '🎨' },
   { keywords: ['chat', 'talk', 'hang', 'catch up'], emoji: '💬' },
-  { keywords: ['study', 'focus'], emoji: '📖' },
+  { keywords: ['study', 'focus', 'learning', 'learn', 'language', 'german', 'spanish', 'french', 'english'], emoji: '📖' },
   { keywords: ['work'], emoji: '💼' },
   { keywords: ['dog', 'pet', 'puppy'], emoji: '🐕' },
-  { keywords: ['dance', 'party'], emoji: '💃' },
+  { keywords: ['dance', 'dancing', 'party'], emoji: '💃' },
+  { keywords: ['anime', 'manga'], emoji: '📺' },
 ]
 
-function getEmojiForStatus(status) {
-  if (!status || typeof status !== 'string') return '✨'
-  const lower = status.toLowerCase()
-  for (const { keywords, emoji } of STATUS_EMOJI_KEYWORDS) {
-    if (keywords.some((k) => lower.includes(k))) return emoji
+// Fallback emoji from interests (visible, not sparkle)
+const INTEREST_EMOJI = {
+  crafts: '🧵',
+  art: '🎨',
+  sports: '⚽',
+  music: '🎵',
+  outdoor: '🏕️',
+  hiking: '🥾',
+  painting: '🖌️',
+  clubbing: '🪩',
+  gaming: '🎮',
+  reading: '📚',
+  cooking: '🍳',
+  travel: '✈️',
+  photography: '📷',
+  movies: '🎬',
+  tech: '💻',
+}
+
+// Priority 1: "What do they want to do?" (status). Priority 2: interests (only when status is empty).
+function getEmojiForUser(status, interests) {
+  const hasStatus = status && typeof status === 'string' && status.trim() !== ''
+  if (hasStatus) {
+    const lower = status.trim().toLowerCase()
+    for (const { keywords, emoji } of STATUS_EMOJI_KEYWORDS) {
+      if (keywords.some((k) => lower.includes(k))) return emoji
+    }
+    return '💬' // has status but no keyword match
   }
-  return '✨'
+  const ids = Array.isArray(interests) ? interests : []
+  for (const id of ids) {
+    if (INTEREST_EMOJI[id]) return INTEREST_EMOJI[id]
+  }
+  return '👤'
 }
 
 function CenterMap({ center, zoom }) {
@@ -200,7 +228,7 @@ export default function MapView() {
   // Use raw coordinates for "You" – rounding to 2 decimals (~1 km) can shift into wrong postal code
   const center = [lat, lng]
   const status = profile?.status?.trim() || ''
-  const emoji = getEmojiForStatus(status)
+  const emoji = getEmojiForUser(status, profile?.interests)
 
   const others = otherUsers.filter((u) => u.id !== currentUserId)
 
@@ -266,7 +294,7 @@ export default function MapView() {
         </Marker>
         {spreadOverlappingMarkers(others).map(({ user, lat, lng }) => {
           const uStatus = user.status?.trim() || ''
-          const uEmoji = getEmojiForStatus(uStatus)
+          const uEmoji = getEmojiForUser(uStatus, user.interests)
           const displayName = user.full_name?.trim() || 'Someone'
           const ageText = user.age != null && user.age !== '' ? `, ${user.age}` : ''
           return (

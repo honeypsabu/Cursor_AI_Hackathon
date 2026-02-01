@@ -191,30 +191,39 @@ $$;
 
 grant execute on function public.get_my_groups() to authenticated;
 
--- RPC: Get group chat messages with sender name
-create or replace function public.get_group_messages(p_group_id uuid)
-returns table (
-  id uuid,
-  content text,
-  sender_id uuid,
-  sender_name text,
-  created_at timestamptz
-)
-language sql
-security definer
-set search_path = public
-as $$
-  select
-    m.id,
-    m.content,
-    m.sender_id,
-    p.full_name as sender_name,
-    m.created_at
-  from public.group_chat_messages m
-  join public.profiles p on p.id = m.sender_id
-  where m.group_id = p_group_id
-    and exists (select 1 from public.group_members gm where gm.group_id = m.group_id and gm.user_id = auth.uid())
-  order by m.created_at asc;
-$$;
+-- RPC: Get group chat messages with sender name (create only if not exists, so later migrations can extend return type)
+do $$
+begin
+  if not exists (
+    select 1 from pg_proc p
+    join pg_namespace n on p.pronamespace = n.oid
+    where n.nspname = 'public' and p.proname = 'get_group_messages'
+  ) then
+    create function public.get_group_messages(p_group_id uuid)
+    returns table (
+      id uuid,
+      content text,
+      sender_id uuid,
+      sender_name text,
+      created_at timestamptz
+    )
+    language sql
+    security definer
+    set search_path = public
+    as $fn$
+      select
+        m.id,
+        m.content,
+        m.sender_id,
+        p.full_name as sender_name,
+        m.created_at
+      from public.group_chat_messages m
+      join public.profiles p on p.id = m.sender_id
+      where m.group_id = p_group_id
+        and exists (select 1 from public.group_members gm where gm.group_id = m.group_id and gm.user_id = auth.uid())
+      order by m.created_at asc;
+    $fn$;
+  end if;
+end $$;
 
 grant execute on function public.get_group_messages(uuid) to authenticated;
